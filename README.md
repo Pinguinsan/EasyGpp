@@ -1,2 +1,8 @@
-# EasyGpp
-A simple command line program for quickly compiling programs with gcc and g++
+# EasyGCC
+Abstraction layer for gcc and g++
+
+Allows quick compiling from the command line
+
+Created by Tyler Lewis
+
+Released under LGPL3.0
