@@ -389,7 +389,7 @@ int main(int argc, char *argv[])
                 if (it == *sourceCodeFiles.begin()) {
                     std::cout << tQuoted(it) << std::endl;
                 } else {
-                    std::cout << whitespace(outputText.length()) << tQuoted(it) << std::endl;
+                    std::cout << tWhitespace(outputText.length()) << tQuoted(it) << std::endl;
                 }
             }
             std::cout << std::endl << "compiled successfully to make executable file \"" << executableName;
@@ -787,7 +787,7 @@ std::vector<std::string> readConfigurationFile()
                     configurationFileOutput.emplace_back("WARNING: line " + toString(currentLine) + " of configuration file:");
                     configurationFileOutput.emplace_back("    No matching parenthesis found, ignoring option");
                     configurationFileOutput.emplace_back(*iter);
-                    configurationFileOutput.emplace_back(whitespace(stripTrailingWhitespace(*iter).length()) + "^---expected here" + tEndl());
+                    configurationFileOutput.emplace_back(tWhitespace(stripTrailingWhitespace(*iter).length()) + "^---expected here" + tEndl());
                     continue;
                 } 
                 if (copyString.find(",") == std::string::npos) { 
@@ -795,9 +795,9 @@ std::vector<std::string> readConfigurationFile()
                     configurationFileOutput.emplace_back("    No parameter separating comma found, ignoring option");
                     configurationFileOutput.emplace_back(*iter);
                     if (copyString.find(")") != std::string::npos) {
-                        configurationFileOutput.emplace_back(whitespace(iter->find(")")) + "^---expected here" + tEndl());
+                        configurationFileOutput.emplace_back(tWhitespace(iter->find(")")) + "^---expected here" + tEndl());
                     } else {
-                       configurationFileOutput.emplace_back(whitespace( (iter->find(".h") != std::string::npos) ? iter->find(".h") : iter->length())  + "^---expected here");
+                       configurationFileOutput.emplace_back(tWhitespace( (iter->find(".h") != std::string::npos) ? iter->find(".h") : iter->length())  + "^---expected here");
                     }
                     continue;
                 } 
@@ -806,7 +806,7 @@ std::vector<std::string> readConfigurationFile()
                     configurationFileOutput.emplace_back("WARNING: line " + toString(currentLine) + " of configuration file:");
                     configurationFileOutput.emplace_back("    No .h extension found, but one was expected, ignoring option");
                     configurationFileOutput.emplace_back(*iter);
-                    configurationFileOutput.emplace_back(whitespace(iter->find(",")) + "^---expected here" + tEndl());
+                    configurationFileOutput.emplace_back(tWhitespace(iter->find(",")) + "^---expected here" + tEndl());
                     continue;
                 }
                 copyString = iter->substr(copyString.find(",")+1);
@@ -821,7 +821,7 @@ std::vector<std::string> readConfigurationFile()
                     configurationFileOutput.emplace_back("WARNING: line " + toString(currentLine) + " of configuration file:");
                     configurationFileOutput.emplace_back("    No library name specified after header file, ignoring option");
                     configurationFileOutput.emplace_back(*iter);
-                    configurationFileOutput.emplace_back(whitespace(iter->find(")")) + "^---expected here" + tEndl());
+                    configurationFileOutput.emplace_back(tWhitespace(iter->find(")")) + "^---expected here" + tEndl());
                     continue;
                 }
                 libraryToHeaderMap.insert(std::make_pair(headerFile, targetLibrary));
@@ -830,7 +830,7 @@ std::vector<std::string> readConfigurationFile()
                     configurationFileOutput.emplace_back("WARNING: line " + toString(currentLine) + " of configuration file:");
                     configurationFileOutput.emplace_back("    No matching parenthesis found, ignoring option");
                     configurationFileOutput.emplace_back(*iter);
-                    configurationFileOutput.emplace_back(whitespace(stripTrailingWhitespace(*iter).length()) + "^---expected here" + tEndl());
+                    configurationFileOutput.emplace_back(tWhitespace(stripTrailingWhitespace(*iter).length()) + "^---expected here" + tEndl());
                     continue;
                 } 
                 extraEditors.emplace_back(iter->substr(iter->find(EDITOR_IDENTIFIER)+EDITOR_IDENTIFIER.length(), iter->find(")") - iter->find(EDITOR_IDENTIFIER)+EDITOR_IDENTIFIER.length()));
@@ -838,7 +838,7 @@ std::vector<std::string> readConfigurationFile()
                 configurationFileOutput.emplace_back("WARNING: line " + toString(currentLine) + " of configuration file:");
                 configurationFileOutput.emplace_back("    expression is malformed/has invalid syntax, ignoring option");
                 configurationFileOutput.emplace_back(*iter);
-                configurationFileOutput.emplace_back(whitespace(stripTrailingWhitespace(*iter).length()) + "^---here" + tEndl());
+                configurationFileOutput.emplace_back(tWhitespace(stripTrailingWhitespace(*iter).length()) + "^---here" + tEndl());
             }
         } catch (std::exception &e) {
              configurationFileOutput.emplace_back("Standard exception caught in readConfigurationFile: " + toString(e.what()) + tEndl());
