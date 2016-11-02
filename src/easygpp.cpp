@@ -47,8 +47,8 @@ using namespace DateTime;
 const std::string PROGRAM_NAME = "easyg++";
 const std::string AUTHOR_NAME = "Tyler Lewis";
 const int SOFTWARE_MAJOR_VERSION = 0;
-const int SOFTWARE_MINOR_VERSION = 1;
-const int SOFTWARE_PATCH_VERSION = 7;
+const int SOFTWARE_MINOR_VERSION = 2;
+const int SOFTWARE_PATCH_VERSION = 0;
 
 #ifdef __GNUC__
     const int GCC_MAJOR_VERSION = __GNUC__;
@@ -85,9 +85,16 @@ static const std::vector<std::string> LIBRARY_OVERRIDE_SWITCHES{"-lo", "--lo", "
 static const std::vector<std::string> VERBOSE_OUTPUT_SWITCHES{"-e", "--e", "-verbose", "--verbose"};
 static const std::vector<std::string> INCLUDE_PATH_SWITCHES{"-i", "--i", "-include", "--include", "-includedir", "--includedir", "-includepath", "--includepath"};
 static const std::vector<std::string> LIBRARY_PATH_SWITCHES{"-l", "--l", "-libdir", "--libdir", "-libpath", "--libpath", "-library", "--library"};
+static const std::vector<std::string> NO_M_TUNE_SWITCHES{"-m", "--m", "-nomtune", "--nomtune"};
+static const std::vector<std::string> NO_RECORD_GCC_SWITCHES_SWITCHES{"-nr", "--nr", "-norecord", "--norecord"};
+static const std::vector<std::string> NO_F_SANITIZE_SWITCHES{"-f", "--f", "-nofsanitize", "--nofsanitize"};
+static const std::string WALL{" -Wall"};
 static const std::string STANDARD_PROMPT_STRING = "Please enter a selection: ";
 static const std::string DEFAULT_CPP_COMPILER_STANDARD{"-std=c++14"};
 static const std::string DEFAULT_C_COMPILER_STANDARD{"-std=c14"};
+static const std::string M_TUNE_GENERIC{" -mtune=generic"};
+static const std::string RECORD_GCC_SWITCHES{" -frecord-gcc-switches"};
+static const std::string F_SANITIZE_UNDEFINED{" -fsanitize=undefined"};
 static const std::string EDITOR_IDENTIFIER{"addeditor("};
 static const std::string LIBRARY_IDENTIFIER{"addlibrary("};
 static const std::string CONFIGURATION_FILE_NAME{"easygpp.config"};
@@ -145,6 +152,9 @@ int main(int argc, char *argv[])
     bool libraryOverride{false};
     bool editorProgramsRetrieved{false};
     bool configurationFileRead{false};
+    std::string mTune{M_TUNE_GENERIC};
+    std::string recordGCCSwitches{RECORD_GCC_SWITCHES};
+    std::string sanitize{F_SANITIZE_UNDEFINED};
     std::string compilerType{"g++"};
     std::string gnuDebugSwitch{" -ggdb"};
     std::string executableName{""};
@@ -198,6 +208,12 @@ int main(int argc, char *argv[])
             buildAndRun = true;
         } else if (isSwitch(static_cast<std::string>(argv[i]), LIBRARY_OVERRIDE_SWITCHES)) {
             libraryOverride = true;
+        } else if (isSwitch(static_cast<std::string>(argv[i]), NO_M_TUNE_SWITCHES)) {
+            mTune = "";
+        } else if (isSwitch(static_cast<std::string>(argv[i]), NO_RECORD_GCC_SWITCHES_SWITCHES)) {
+            recordGCCSwitches = "";
+        } else if (isSwitch(static_cast<std::string>(argv[i]), NO_F_SANITIZE_SWITCHES)) {
+            sanitize = "";
         } else if (isSwitch(static_cast<std::string>(argv[i]), INCLUDE_PATH_SWITCHES)) {
             if (argv[i+1]) {
                 std::string tempSwitchDir{static_cast<std::string>(argv[i+1])};
@@ -279,7 +295,14 @@ int main(int argc, char *argv[])
         //gnuDebugSwitch will be " -ggdb " by default unless overriden by the -nd switch
         //staticSwitch will be an empty string unless it is set using the -st switch
         //staticLibGCCSwitch will be an empty string unless it is set using the -st switch
-        SystemCommand systemCommand{compilerType + " -Wall" + gnuDebugSwitch + staticSwitch + staticLibGCCSwitch};
+        SystemCommand systemCommand{compilerType 
+                                    + WALL 
+                                    + mTune
+                                    + sanitize
+                                    + recordGCCSwitches
+                                    + gnuDebugSwitch 
+                                    + staticSwitch 
+                                    + staticLibGCCSwitch};
         if (gccFlag) {
             for (auto &it : sourceCodeFiles) {
                 if (it.find(".cpp") != std::string::npos) {
@@ -541,6 +564,9 @@ void displayHelp()
     std::cout << "    -lo, --lo, -loverride, --loverride: Override the default behavior to automatically add libraries, as specified by the configuration file " << std::endl;
     std::cout << "    -i, --i, -include, --include: Add an additional include path" << std::endl;
     std::cout << "    -l, --l, -libdir, --libdir: Add an additional library path" << std::endl;
+    std::cout << "    -m, --m, -nomtune, --nomtune: Do not inclue -mtune=generic switch" << std::endl;
+    std::cout << "    -nr, --nr, -norecord, --norecord: Do not include -frecord-gcc-switches switch" << std::endl;
+    std::cout << "    -f, --f, -nofsanitize, --nofsanitize: Do not include -fsanitize=undefined switch" << std::endl;
     std::cout << "Normal gcc and g++ switches can be included as well (-Werror, -03, etc)" << std::endl;
     std::cout << "Default g++ switches used: -Wall -std=c++14" << std::endl;
     std::cout << "Argument: Source code that you want to compile" << std::endl;

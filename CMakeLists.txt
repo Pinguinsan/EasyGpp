@@ -6,6 +6,8 @@ project(EasyGpp CXX)
 set(CMAKE_BUILD_TYPE Release)
 set(SOURCE_BASE /opt/GitHub/EasyGpp)
 set(CMAKE_CXX_STANDARD 14)
+set(GCC_ADDITIONAL_COMPILE_FLAGS "-fsanitize=undefined -frecord-gcc-switches")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_ADDITIONAL_COMPILE_FLAGS}")
 
 include_directories("${SOURCE_BASE}/include")
 
