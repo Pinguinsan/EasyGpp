@@ -44,16 +44,17 @@ using namespace GeneralUtilities;
 using namespace FileUtilities;
 using namespace DateTime;
 
-const std::string PROGRAM_NAME = "easyg++";
-const std::string AUTHOR_NAME = "Tyler Lewis";
-const int SOFTWARE_MAJOR_VERSION = 0;
-const int SOFTWARE_MINOR_VERSION = 2;
-const int SOFTWARE_PATCH_VERSION = 0;
+static const char *PROGRAM_NAME = "easyg++";
+static const char *LONG_PROGRAM_NAME = "EasyGpp";
+static const char * AUTHOR_NAME = "Tyler Lewis";
+static const int SOFTWARE_MAJOR_VERSION = 0;
+static const int SOFTWARE_MINOR_VERSION = 2;
+static const int SOFTWARE_PATCH_VERSION = 0;
 
-#ifdef __GNUC__
-    const int GCC_MAJOR_VERSION = __GNUC__;
-    const int GCC_MINOR_VERSION = __GNUC_MINOR__;
-    const int GCC_PATCH_VERSION = __GNUC_PATCHLEVEL__;
+#if defined(__GNUC__)
+    static const int GCC_MAJOR_VERSION = __GNUC__;
+    static const int GCC_MINOR_VERSION = __GNUC_MINOR__;
+    static const int GCC_PATCH_VERSION = __GNUC_PATCHLEVEL__;
 #else
     #error "The compiler must define __GNUC__ to use this program, but the compiler does not have it defined"
 #endif
@@ -71,23 +72,23 @@ Animal Pigs;
 
 static const char PATH_DELIMITER = ':';
 
-static const std::vector<std::string> KNOWN_EDITOR_BINARIES = {"notepad", "vim", "nano", "emacs", "mousepad", "leafpad", "code", "sublime_text", "vscode"};
-static const std::vector<std::string> KNOWN_LIBRARY_BINARIES = {"datetime.h", "generalutilities.h", "systemcommand.h", "fileutilities.h", "templateobject.h", "crypto.h", "mathutilities.h", "tjlutils.h"};
-static const std::vector<std::string> STATIC_SWITCHES{"-st", "--st", "--static", "-static"};
-static const std::vector<std::string> STANDARD_SWITCHES{"-s", "--s", "-standard", "--standard"};    
-static const std::vector<std::string> HELP_SWITCHES{"-h", "--h", "-help", "--help"};
-static const std::vector<std::string> VERSION_SWITCHES{"v", "-v", "--v", "-version", "--version"};
-static const std::vector<std::string> GCC_SWITCHES{"-c", "--c", "-cc", "--cc", "-gcc", "--gcc"};
-static const std::vector<std::string> NAME_SWITCHES{"-n", "--n", "-name", "--name"};
-static const std::vector<std::string> NO_DEBUG_SWITCHES{"-nd", "--nd", "-nodebug", "--nodebug", "-ndebug", "--ndebug"};    
-static const std::vector<std::string> BUILD_AND_RUN_SWITCHES{"-r", "--r", "-run", "--run", "-buildandrun", "--buildandrun"};
-static const std::vector<std::string> LIBRARY_OVERRIDE_SWITCHES{"-lo", "--lo", "-loverride", "--loverride"};
-static const std::vector<std::string> VERBOSE_OUTPUT_SWITCHES{"-e", "--e", "-verbose", "--verbose"};
-static const std::vector<std::string> INCLUDE_PATH_SWITCHES{"-i", "--i", "-include", "--include", "-includedir", "--includedir", "-includepath", "--includepath"};
-static const std::vector<std::string> LIBRARY_PATH_SWITCHES{"-l", "--l", "-libdir", "--libdir", "-libpath", "--libpath", "-library", "--library"};
-static const std::vector<std::string> NO_M_TUNE_SWITCHES{"-m", "--m", "-nomtune", "--nomtune"};
-static const std::vector<std::string> NO_RECORD_GCC_SWITCHES_SWITCHES{"-nr", "--nr", "-norecord", "--norecord"};
-static const std::vector<std::string> NO_F_SANITIZE_SWITCHES{"-f", "--f", "-nofsanitize", "--nofsanitize"};
+static const std::list<std::string> KNOWN_EDITOR_BINARIES = {"notepad", "vim", "nano", "emacs", "mousepad", "leafpad", "code", "sublime_text", "vscode"};
+static const std::list<std::string> KNOWN_LIBRARY_BINARIES = {"datetime.h", "generalutilities.h", "systemcommand.h", "fileutilities.h", "templateobject.h", "crypto.h", "mathutilities.h", "tjlutils.h"};
+static const std::list<std::string> STATIC_SWITCHES{"-st", "--st", "--static", "-static"};
+static const std::list<std::string> STANDARD_SWITCHES{"-s", "--s", "-standard", "--standard"};    
+static const std::list<std::string> HELP_SWITCHES{"-h", "--h", "-help", "--help"};
+static const std::list<std::string> VERSION_SWITCHES{"v", "-v", "--v", "-version", "--version"};
+static const std::list<std::string> GCC_SWITCHES{"-c", "--c", "-cc", "--cc", "-gcc", "--gcc"};
+static const std::list<std::string> NAME_SWITCHES{"-n", "--n", "-name", "--name"};
+static const std::list<std::string> NO_DEBUG_SWITCHES{"-nd", "--nd", "-nodebug", "--nodebug", "-ndebug", "--ndebug"};    
+static const std::list<std::string> BUILD_AND_RUN_SWITCHES{"-r", "--r", "-run", "--run", "-buildandrun", "--buildandrun"};
+static const std::list<std::string> LIBRARY_OVERRIDE_SWITCHES{"-lo", "--lo", "-loverride", "--loverride"};
+static const std::list<std::string> VERBOSE_OUTPUT_SWITCHES{"-e", "--e", "-verbose", "--verbose"};
+static const std::list<std::string> INCLUDE_PATH_SWITCHES{"-i", "--i", "-include", "--include", "-includedir", "--includedir", "-includepath", "--includepath"};
+static const std::list<std::string> LIBRARY_PATH_SWITCHES{"-l", "--l", "-libdir", "--libdir", "-libpath", "--libpath", "-library", "--library"};
+static const std::list<std::string> NO_M_TUNE_SWITCHES{"-m", "--m", "-nomtune", "--nomtune"};
+static const std::list<std::string> NO_RECORD_GCC_SWITCHES_SWITCHES{"-nr", "--nr", "-norecord", "--norecord"};
+static const std::list<std::string> NO_F_SANITIZE_SWITCHES{"-f", "--f", "-nofsanitize", "--nofsanitize"};
 static const std::string WALL{" -Wall"};
 static const std::string STANDARD_PROMPT_STRING = "Please enter a selection: ";
 static const std::string DEFAULT_CPP_COMPILER_STANDARD{"-std=c++14"};
@@ -114,8 +115,6 @@ void interruptHandler(int signalNumber);
 bool isGeneralSwitch(const std::string &stringToCheck);
 bool isLibrarySwitch(const std::string &stringToCheck);
 bool isSourceCodeFile(const std::string &stringToCheck);
-bool isSwitch(const std::string &stringToCheck, const std::vector<std::string> &switches);
-bool isSwitch(const std::string &stringToCheck, const std::string &switchToCheck);
 
 std::string determineOverrideStandard(const std::string &stringToDetermine);
 std::map<std::string, std::string> getEditorProgramPaths();
@@ -136,10 +135,10 @@ int main(int argc, char *argv[])
 
     std::cout << std::endl;
     for (int i = 0; i < argc; i++) { 
-        if (isSwitch(static_cast<std::string>(argv[i]), HELP_SWITCHES)) {
+        if (isSwitch(argv[i], HELP_SWITCHES)) {
             displayHelp();
             return 0;
-        } else if (isSwitch(static_cast<std::string>(argv[i]), VERSION_SWITCHES)) {
+        } else if (isSwitch(argv[i], VERSION_SWITCHES)) {
             displayVersion();
             return 0;
         }
@@ -171,50 +170,74 @@ int main(int argc, char *argv[])
     std::future<std::map<std::string, std::string>> editorProgramsTask = std::async(std::launch::async, getEditorProgramPaths);
 
     for (int i = 0; i < argc; i++) {
-        if (isSwitch(static_cast<std::string>(argv[i]), GCC_SWITCHES)) {
+        if (isSwitch(argv[i], GCC_SWITCHES)) {
             gccFlag = true;
             compilerType = "gcc";
             compilerStandard = DEFAULT_C_COMPILER_STANDARD;
-        } else if (isSwitch(static_cast<std::string>(argv[i]), NAME_SWITCHES)) {
+        } else if (isSwitch(argv[i], NAME_SWITCHES)) {
             if (argv[i+1]) {
                 executableName = static_cast<std::string>(argv[i+1]);
                 i++;
             } else {
-                std::cout << "WARNING: Switch " << tQuoted(argv[i]) << " accepted, but an output filename was not specified" << std::endl;
+                std::cout << "WARNING: Switch " << tQuoted(argv[i]) << " accepted, but an output filename was not specified, skipping option" << std::endl;
                 std::cout << "    Falling back on default executable name being .c/.cpp file name" << std::endl << std::endl;
             }
-        } else if (isSwitch(static_cast<std::string>(argv[i]), STANDARD_SWITCHES)) {
+        } else if (isEqualsSwitch(argv[i], NAME_SWITCHES)) {
+            std::string copyString{static_cast<std::string>(argv[i])};
+            size_t foundPosition{copyString.find("=")};
+            size_t foundEnd{copyString.substr(foundPosition).find(" ")};
+            if (copyString.substr(foundPosition+1, (foundEnd - foundPosition)) == "") {
+                std::cout << "WARNING: Switch " << tQuoted(argv[i]) << " accepted, but an output filename was not specified, skipping option" << std::endl;
+            } else {
+                executableName = stripAllFromString(copyString.substr(foundPosition+1, (foundEnd - foundPosition)), "\"");
+            }   
+        }  else if (isSwitch(argv[i], STANDARD_SWITCHES)) {
             if (argv[i+1]) {
                 std::string tempCompilerStandard{determineOverrideStandard(static_cast<std::string>(argv[i+1]))};
                 if (tempCompilerStandard == "") {
-                    std::cout << "WARNING: Switch " << tQuoted(argv[i]) << " accepted, but standard " << tQuoted(argv[i+1]) << " is not valid" << std::endl;
+                    std::cout << "WARNING: Switch " << tQuoted(argv[i]) << " accepted, but standard " << tQuoted(argv[i+1]) << " is not a valid standard valid" << std::endl;
                     std::cout << "    Falling back on default compiler standard of " << tQuoted(DEFAULT_CPP_COMPILER_STANDARD) << std::endl << std::endl;
                 } else {
                     compilerStandard = tempCompilerStandard;
                     i++;
                 }
             } else {
-                std::cout << "WARNING: Switch " << tQuoted(argv[i]) << " accepted, but a standard was not specified" << std::endl;
+                std::cout << "WARNING: Switch " << tQuoted(argv[i]) << " accepted, but a standard was not specified, skipping option" << std::endl;
                 std::cout << "    Falling back on default compiler standard of " << tQuoted(DEFAULT_CPP_COMPILER_STANDARD) << std::endl << std::endl;
             }
-        } else if (isSwitch(static_cast<std::string>(argv[i]), NO_DEBUG_SWITCHES)) {
+        } else if (isEqualsSwitch(argv[i], STANDARD_SWITCHES)) {
+            std::string copyString{static_cast<std::string>(argv[i])};
+            size_t foundPosition{copyString.find("=")};
+            size_t foundEnd{copyString.substr(foundPosition).find(" ")};
+            if (copyString.substr(foundPosition+1, (foundEnd - foundPosition)) == "") {
+                std::cout << "WARNING: Switch " << tQuoted(argv[i]) << " accepted, but a standard was not specified, skipping option" << std::endl;
+            } else {
+                std::string tempCompilerStandard{determineOverrideStandard(stripAllFromString(copyString.substr(foundPosition+1, (foundEnd - foundPosition)), "\""))};
+                if (tempCompilerStandard == "") {
+                    std::cout << "WARNING: Switch " << tQuoted(argv[i]) << " accepted, but standard " << tQuoted(stripAllFromString(copyString.substr(foundPosition+1, (foundEnd - foundPosition)), "\"")) << " is not a valid standard" << std::endl;
+                    std::cout << "    Falling back on default compiler standard of " << tQuoted(DEFAULT_CPP_COMPILER_STANDARD) << std::endl << std::endl;
+                } else {
+                    compilerStandard = tempCompilerStandard;
+                }
+            }   
+        }  else if (isSwitch(argv[i], NO_DEBUG_SWITCHES)) {
             gnuDebugSwitch = "";
-        } else if (isSwitch(static_cast<std::string>(argv[i]), STATIC_SWITCHES)) {
+        } else if (isSwitch(argv[i], STATIC_SWITCHES)) {
             staticSwitch = " -static ";
             staticLibGCCSwitch = " -static-libgcc ";
-        } else if (isSwitch(static_cast<std::string>(argv[i]), VERBOSE_OUTPUT_SWITCHES)) {
+        } else if (isSwitch(argv[i], VERBOSE_OUTPUT_SWITCHES)) {
             verboseOutput = true;
-        } else if (isSwitch(static_cast<std::string>(argv[i]), BUILD_AND_RUN_SWITCHES)) {
+        } else if (isSwitch(argv[i], BUILD_AND_RUN_SWITCHES)) {
             buildAndRun = true;
-        } else if (isSwitch(static_cast<std::string>(argv[i]), LIBRARY_OVERRIDE_SWITCHES)) {
+        } else if (isSwitch(argv[i], LIBRARY_OVERRIDE_SWITCHES)) {
             libraryOverride = true;
-        } else if (isSwitch(static_cast<std::string>(argv[i]), NO_M_TUNE_SWITCHES)) {
+        } else if (isSwitch(argv[i], NO_M_TUNE_SWITCHES)) {
             mTune = "";
-        } else if (isSwitch(static_cast<std::string>(argv[i]), NO_RECORD_GCC_SWITCHES_SWITCHES)) {
+        } else if (isSwitch(argv[i], NO_RECORD_GCC_SWITCHES_SWITCHES)) {
             recordGCCSwitches = "";
-        } else if (isSwitch(static_cast<std::string>(argv[i]), NO_F_SANITIZE_SWITCHES)) {
+        } else if (isSwitch(argv[i], NO_F_SANITIZE_SWITCHES)) {
             sanitize = "";
-        } else if (isSwitch(static_cast<std::string>(argv[i]), INCLUDE_PATH_SWITCHES)) {
+        } else if (isSwitch(argv[i], INCLUDE_PATH_SWITCHES)) {
             if (argv[i+1]) {
                 std::string tempSwitchDir{static_cast<std::string>(argv[i+1])};
                 if (!directoryExists(tempSwitchDir)) {
@@ -225,10 +248,25 @@ int main(int argc, char *argv[])
                     i++;
                 }
             } else {
-                std::cout << "WARNING: Switch " << tQuoted(argv[i]) << " accepted, but no directory was specified" << std::endl;
+                std::cout << "WARNING: Switch " << tQuoted(argv[i]) << " accepted, but no directory was specified, skipping option" << std::endl;
                 std::cout << "    Skipping include path option" << std::endl << std::endl;
             } 
-        } else if (isSwitch(static_cast<std::string>(argv[i]), LIBRARY_PATH_SWITCHES)) {
+        } else if (isEqualsSwitch(argv[i], INCLUDE_PATH_SWITCHES)) {
+            std::string copyString{static_cast<std::string>(argv[i])};
+            size_t foundPosition{copyString.find("=")};
+            size_t foundEnd{copyString.substr(foundPosition).find(" ")};
+            if (copyString.substr(foundPosition+1, (foundEnd - foundPosition)) == "") {
+                std::cout << "WARNING: Switch " << tQuoted(argv[i]) << " accepted, but no directory was specified, skipping option" << std::endl;
+            } else {
+                std::string tempSwitchDir{stripAllFromString(copyString.substr(foundPosition+1, (foundEnd - foundPosition)), "\"")};
+                if (!directoryExists(tempSwitchDir)) {
+                    std::cout << "WARNING: Switch " << tQuoted(argv[i]) << " accepted, but include path " << tQuoted(tempSwitchDir) << " is not a valid directory" << std::endl;
+                    std::cout << "    Skipping include path option" << std::endl << std::endl;
+                } else {
+                    includePaths.emplace(tempSwitchDir);
+                }
+            }   
+        } else if (isSwitch(argv[i], LIBRARY_PATH_SWITCHES)) {
             if (argv[i+1]) {
                 std::string tempSwitchDir{static_cast<std::string>(argv[i+1])};
                 if (!directoryExists(tempSwitchDir)) {
@@ -239,9 +277,24 @@ int main(int argc, char *argv[])
                     i++;
                 }
             } else {
-                std::cout << "WARNING: Switch " << tQuoted(argv[i]) << " accepted, but no directory was specified" << std::endl;
+                std::cout << "WARNING: Switch " << tQuoted(argv[i]) << " accepted, but no directory was specified, skipping option" << std::endl;
                 std::cout << "    Skipping library path option" << std::endl << std::endl;
             } 
+        } else if (isEqualsSwitch(argv[i], LIBRARY_PATH_SWITCHES)) {
+            std::string copyString{static_cast<std::string>(argv[i])};
+            size_t foundPosition{copyString.find("=")};
+            size_t foundEnd{copyString.substr(foundPosition).find(" ")};
+            if (copyString.substr(foundPosition+1, (foundEnd - foundPosition)) == "") {
+                std::cout << "WARNING: Switch " << tQuoted(argv[i]) << " accepted, but no directory was specified, skipping option" << std::endl;
+            } else {
+                std::string tempSwitchDir{stripAllFromString(copyString.substr(foundPosition+1, (foundEnd - foundPosition)), "\"")};
+                if (!directoryExists(tempSwitchDir)) {
+                    std::cout << "WARNING: Switch " << tQuoted(argv[i]) << " accepted, but library path " << tQuoted(tempSwitchDir) << " is not a valid directory" << std::endl;
+                    std::cout << "    Skipping include path option" << std::endl << std::endl;
+                } else {
+                    libraryPaths.emplace(tempSwitchDir);
+                }
+            }   
         } else if (isSourceCodeFile(static_cast<std::string>(argv[i]))) {
             sourceCodeFiles.emplace_back(static_cast<std::string>(argv[i]));
         } else if (isLibrarySwitch(static_cast<std::string>(argv[i]))) {
@@ -593,30 +646,6 @@ void displayVersion()
     std::cout << "Built with g++ v" << GCC_MAJOR_VERSION << "." << GCC_MINOR_VERSION << "." << GCC_PATCH_VERSION << ", " << dateStampMDY() << std::endl << std::endl;
 }
 
-bool isSwitch(const std::string &stringToCheck, const std::vector<std::string> &switches)
-{
-    std::string copyString{stringToCheck};
-    std::transform(copyString.begin(), copyString.end(), copyString.begin(), ::tolower);
-    for (auto &it : switches) {
-        std::string switchCopy{it};
-        std::transform(switchCopy.begin(), switchCopy.end(), switchCopy.begin(), ::tolower);
-        if (copyString == switchCopy) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool isSwitch(const std::string &stringToCheck, const std::string &switchToCheck)
-{
-    std::string copyString{stringToCheck};
-    std::string switchCopy{switchToCheck};
-    std::transform(copyString.begin(), copyString.end(), copyString.begin(), ::tolower);
-    std::transform(switchCopy.begin(), switchCopy.end(), switchCopy.begin(), ::tolower);
-    
-    return (copyString == switchCopy);
-}
-
 bool isGeneralSwitch(const std::string &stringToCheck) 
 {
     if (stringToCheck.length() == 0) {
@@ -638,14 +667,14 @@ bool isLibrarySwitch(const std::string &stringToCheck)
 
 bool isSourceCodeFile(const std::string &stringToCheck) 
 {
-    std::string tempStringToCheck = stringToCheck;
+    std::string tempStringToCheck{stringToCheck};
     std::transform(tempStringToCheck.begin(), tempStringToCheck.end(), tempStringToCheck.begin(), ::tolower);
     return (tempStringToCheck.find(".c") != std::string::npos);
 }
 
 std::string determineOverrideStandard(const std::string &stringToDetermine) 
 {
-    std::string tempStringToDetermine = stringToDetermine;
+    std::string tempStringToDetermine{stringToDetermine};
     std::transform(tempStringToDetermine.begin(), tempStringToDetermine.end(), tempStringToDetermine.begin(), ::tolower);
     
     if (tempStringToDetermine.find("c++17") != std::string::npos) {
