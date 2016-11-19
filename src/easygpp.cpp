@@ -46,7 +46,7 @@ using namespace DateTime;
 
 static const char *PROGRAM_NAME = "easyg++";
 static const char *LONG_PROGRAM_NAME = "EasyGpp";
-static const char * AUTHOR_NAME = "Tyler Lewis";
+static const char *AUTHOR_NAME = "Tyler Lewis";
 static const int SOFTWARE_MAJOR_VERSION = 0;
 static const int SOFTWARE_MINOR_VERSION = 2;
 static const int SOFTWARE_PATCH_VERSION = 0;
@@ -91,11 +91,16 @@ static const std::list<std::string> NO_RECORD_GCC_SWITCHES_SWITCHES{"-nr", "--nr
 static const std::list<std::string> NO_F_SANITIZE_SWITCHES{"-f", "--f", "-nofsanitize", "--nofsanitize"};
 static const std::string WALL{" -Wall"};
 static const std::string STANDARD_PROMPT_STRING = "Please enter a selection: ";
-static const std::string DEFAULT_CPP_COMPILER_STANDARD{"-std=c++14"};
-static const std::string DEFAULT_C_COMPILER_STANDARD{"-std=c14"};
+static const std::string DEFAULT_CPP_COMPILER_STANDARD{" -std=c++14"};
+static const std::string DEFAULT_C_COMPILER_STANDARD{" -std=c11"};
 static const std::string M_TUNE_GENERIC{" -mtune=generic"};
-static const std::string RECORD_GCC_SWITCHES{" -frecord-gcc-switches"};
-static const std::string F_SANITIZE_UNDEFINED{" -fsanitize=undefined"};
+#if defined(_WIN32) || defined(__CYGWIN__)
+    static const std::string RECORD_GCC_SWITCHES{""};
+    static const std::string F_SANITIZE_UNDEFINED{""};
+#else
+    static const std::string RECORD_GCC_SWITCHES{" -frecord-gcc-switches"};
+    static const std::string F_SANITIZE_UNDEFINED{" -fsanitize=undefined"};
+#endif
 static const std::string EDITOR_IDENTIFIER{"addeditor("};
 static const std::string LIBRARY_IDENTIFIER{"addlibrary("};
 static const std::string CONFIGURATION_FILE_NAME{"easygpp.config"};
@@ -433,7 +438,7 @@ int main(int argc, char *argv[])
                                 }
                             }
                         }
-                        #ifdef __linux__
+                        #if defined(__linux__)
                             for (std::vector<std::string>::const_iterator iter = PTHREAD_IDENTIFIERS.begin(); iter != PTHREAD_IDENTIFIERS.end(); iter++) {
                                 if (rawString.find(*iter) != std::string::npos) {
                                     librarySwitches.emplace("-lpthread");
