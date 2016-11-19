@@ -22,6 +22,7 @@
 
 #include <unistd.h>
 #include <signal.h>
+#include <cstring>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -46,7 +47,7 @@ using namespace DateTime;
 
 static const char *PROGRAM_NAME = "easyg++";
 static const char *LONG_PROGRAM_NAME = "EasyGpp";
-static const char *AUTHOR_NAME = "Tyler Lewis";
+static const char * AUTHOR_NAME = "Tyler Lewis";
 static const int SOFTWARE_MAJOR_VERSION = 0;
 static const int SOFTWARE_MINOR_VERSION = 2;
 static const int SOFTWARE_PATCH_VERSION = 0;
@@ -72,42 +73,52 @@ Animal Pigs;
 
 static const char PATH_DELIMITER = ':';
 
-static const std::list<std::string> KNOWN_EDITOR_BINARIES = {"notepad", "vim", "nano", "emacs", "mousepad", "leafpad", "code", "sublime_text", "vscode"};
-static const std::list<std::string> KNOWN_LIBRARY_BINARIES = {"datetime.h", "generalutilities.h", "systemcommand.h", "fileutilities.h", "templateobject.h", "crypto.h", "mathutilities.h", "tjlutils.h"};
-static const std::list<std::string> STATIC_SWITCHES{"-st", "--st", "--static", "-static"};
-static const std::list<std::string> STANDARD_SWITCHES{"-s", "--s", "-standard", "--standard"};    
-static const std::list<std::string> HELP_SWITCHES{"-h", "--h", "-help", "--help"};
-static const std::list<std::string> VERSION_SWITCHES{"v", "-v", "--v", "-version", "--version"};
-static const std::list<std::string> GCC_SWITCHES{"-c", "--c", "-cc", "--cc", "-gcc", "--gcc"};
-static const std::list<std::string> NAME_SWITCHES{"-n", "--n", "-name", "--name"};
-static const std::list<std::string> NO_DEBUG_SWITCHES{"-nd", "--nd", "-nodebug", "--nodebug", "-ndebug", "--ndebug"};    
-static const std::list<std::string> BUILD_AND_RUN_SWITCHES{"-r", "--r", "-run", "--run", "-buildandrun", "--buildandrun"};
-static const std::list<std::string> LIBRARY_OVERRIDE_SWITCHES{"-lo", "--lo", "-loverride", "--loverride"};
-static const std::list<std::string> VERBOSE_OUTPUT_SWITCHES{"-e", "--e", "-verbose", "--verbose"};
-static const std::list<std::string> INCLUDE_PATH_SWITCHES{"-i", "--i", "-include", "--include", "-includedir", "--includedir", "-includepath", "--includepath"};
-static const std::list<std::string> LIBRARY_PATH_SWITCHES{"-l", "--l", "-libdir", "--libdir", "-libpath", "--libpath", "-library", "--library"};
-static const std::list<std::string> NO_M_TUNE_SWITCHES{"-m", "--m", "-nomtune", "--nomtune"};
-static const std::list<std::string> NO_RECORD_GCC_SWITCHES_SWITCHES{"-nr", "--nr", "-norecord", "--norecord"};
-static const std::list<std::string> NO_F_SANITIZE_SWITCHES{"-f", "--f", "-nofsanitize", "--nofsanitize"};
-static const std::string WALL{" -Wall"};
-static const std::string STANDARD_PROMPT_STRING = "Please enter a selection: ";
-static const std::string DEFAULT_CPP_COMPILER_STANDARD{" -std=c++14"};
-static const std::string DEFAULT_C_COMPILER_STANDARD{" -std=c11"};
-static const std::string M_TUNE_GENERIC{" -mtune=generic"};
+static const std::list<const char *> KNOWN_EDITOR_BINARIES = {"notepad", "vim", "nano", "emacs", "mousepad", "leafpad", "code", "sublime_text", "vscode"};
+static const std::list<const char *> STATIC_SWITCHES{"-t", "--t", "--static", "-static"};
+static const std::list<const char *> STANDARD_SWITCHES{"-s", "--s", "-standard", "--standard"};    
+static const std::list<const char *> HELP_SWITCHES{"-h", "--h", "-help", "--help"};
+static const std::list<const char *> VERSION_SWITCHES{"v", "-v", "--v", "-version", "--version"};
+static const std::list<const char *> GCC_SWITCHES{"-c", "--c", "-cc", "--cc", "-gcc", "--gcc"};
+static const std::list<const char *> NAME_SWITCHES{"-n", "--n", "-name", "--name"};
+static const std::list<const char *> NO_DEBUG_SWITCHES{"-d", "--d", "-no-debug", "--no-debug"};    
+static const std::list<const char *> BUILD_AND_RUN_SWITCHES{"-r", "--r", "-run", "--run", "-buildandrun", "--buildandrun"};
+static const std::list<const char *> LIBRARY_OVERRIDE_SWITCHES{"-o", "--o", "-loverride", "--loverride"};
+static const std::list<const char *> VERBOSE_OUTPUT_SWITCHES{"-e", "--e", "-verbose", "--verbose"};
+static const std::list<const char *> INCLUDE_PATH_SWITCHES{"-i", "--i", "-include", "--include", "-include-dir", "--include-dir", "-include-path", "--include-path"};
+static const std::list<const char *> LIBRARY_PATH_SWITCHES{"-l", "--l", "-lib-dir", "--lib-dir", "-lib-path", "--lib-path", "-library", "--library"};
+static const std::list<const char *> NO_M_TUNE_SWITCHES{"-m", "--m", "-no-mtune", "--no-mtune"};
+static const std::list<const char *> NO_RECORD_GCC_SWITCHES_SWITCHES{"-h", "--h", "-no-record", "--no-record"};
+static const std::list<const char *> NO_F_SANITIZE_SWITCHES{"-f", "--f", "-no-fsanitize", "--no-fsanitize"};
+static const char *WARNING_LEVEL{" -Wall -Wextra -Wpedantic"};
+static const char *STANDARD_PROMPT_STRING{"Please enter a selection: "};
+static const char *DEFAULT_CPP_COMPILER_STANDARD{"-std=c++14"};
+static const char *DEFAULT_C_COMPILER_STANDARD{"-std=c14"};
+static const char *M_TUNE_GENERIC{" -mtune=generic"};
 #if defined(_WIN32) || defined(__CYGWIN__)
-    static const std::string RECORD_GCC_SWITCHES{""};
-    static const std::string F_SANITIZE_UNDEFINED{""};
+    static const char *RECORD_GCC_SWITCHES{""};
+    static const char *F_SANITIZE_UNDEFINED{""};
 #else
-    static const std::string RECORD_GCC_SWITCHES{" -frecord-gcc-switches"};
-    static const std::string F_SANITIZE_UNDEFINED{" -fsanitize=undefined"};
+    static const char *RECORD_GCC_SWITCHES{" -frecord-gcc-switches"};
+    static const char *F_SANITIZE_UNDEFINED{" -fsanitize=undefined"};
 #endif
-static const std::string EDITOR_IDENTIFIER{"addeditor("};
-static const std::string LIBRARY_IDENTIFIER{"addlibrary("};
-static const std::string CONFIGURATION_FILE_NAME{"easygpp.config"};
-static const std::string DEFAULT_CONFIGURATION_FILE{static_cast<std::string>(getenv("HOME")) + "/.local/easygpp/" + CONFIGURATION_FILE_NAME};
-static const std::string BACKUP_CONFIGURATION_FILE{"/usr/share/easygpp/" + CONFIGURATION_FILE_NAME};
-static const std::string LAST_CHANCE_CONFIGURATION_FILE{"/opt/GitHub/EasyGpp/config/" + CONFIGURATION_FILE_NAME};
-static const std::vector<std::string> PTHREAD_IDENTIFIERS{"<thread>", "<future>"};
+
+static const char *EDITOR_IDENTIFIER{"addeditor("};
+static const char *LIBRARY_IDENTIFIER{"addlibrary("};
+static const char *CONFIGURATION_FILE_NAME{"easygpp.config"};
+static const char *DEFAULT_CONFIGURATION_FILE{std::string{
+                                              static_cast<std::string>(getenv("HOME"))
+                                              + "/.local/easygpp/" 
+                                              + static_cast<std::string>(CONFIGURATION_FILE_NAME)
+                                              }.c_str()};
+static const char *BACKUP_CONFIGURATION_FILE{std::string{
+                                             static_cast<std::string>("/usr/share/easygpp/") 
+                                             + static_cast<std::string>(CONFIGURATION_FILE_NAME)
+                                             }.c_str()};
+static const char *LAST_CHANCE_CONFIGURATION_FILE{std::string{
+                                                  static_cast<std::string>("/opt/GitHub/EasyGpp/config/")
+                                                + static_cast<std::string>(CONFIGURATION_FILE_NAME)
+                                                }.c_str()};
+static const std::vector<const char *> PTHREAD_IDENTIFIERS{"<thread>", "<future>"};
 
 static std::vector<std::string> extraEditors;
 static std::map<std::string, std::string> libraryToHeaderMap;
@@ -354,7 +365,7 @@ int main(int argc, char *argv[])
         //staticSwitch will be an empty string unless it is set using the -st switch
         //staticLibGCCSwitch will be an empty string unless it is set using the -st switch
         SystemCommand systemCommand{compilerType 
-                                    + WALL 
+                                    + WARNING_LEVEL 
                                     + mTune
                                     + sanitize
                                     + recordGCCSwitches
@@ -438,9 +449,9 @@ int main(int argc, char *argv[])
                                 }
                             }
                         }
-                        #if defined(__linux__)
-                            for (std::vector<std::string>::const_iterator iter = PTHREAD_IDENTIFIERS.begin(); iter != PTHREAD_IDENTIFIERS.end(); iter++) {
-                                if (rawString.find(*iter) != std::string::npos) {
+                        #ifdef __linux__
+                            for (auto &it : PTHREAD_IDENTIFIERS) {
+                                if (rawString.find(it) != std::string::npos) {
                                     librarySwitches.emplace("-lpthread");
                                 }
                             }
@@ -739,7 +750,8 @@ std::map<std::string, std::string> getEditorProgramPaths()
 bool matchesKnownEditorBinaries(const std::string &binaryNameToCheck) 
 {
     size_t foundPosition{0};
-    for (auto &it : KNOWN_EDITOR_BINARIES) {
+    for (auto &iter : KNOWN_EDITOR_BINARIES) {
+        std::string it{static_cast<std::string>(iter)};
         foundPosition = binaryNameToCheck.find(it);
         if ((foundPosition != std::string::npos) && (it.length() == binaryNameToCheck.length())) {
            return true;
@@ -768,6 +780,8 @@ bool matchesKnownEditorBinaries(const std::string &binaryNameToCheck)
 
 std::vector<std::string> readConfigurationFile()
 {
+    std::string libraryIdentifierString{static_cast<std::string>(LIBRARY_IDENTIFIER)};
+    std::string editorIdentifierString{static_cast<std::string>(EDITOR_IDENTIFIER)};
     std::vector<std::string> configurationFileOutput;
     if (!fileExists(DEFAULT_CONFIGURATION_FILE) && !fileExists(BACKUP_CONFIGURATION_FILE) && !fileExists(LAST_CHANCE_CONFIGURATION_FILE))  {
         return configurationFileOutput;
@@ -818,8 +832,8 @@ std::vector<std::string> readConfigurationFile()
             std::string copyString{*iter};
             std::transform(copyString.begin(), copyString.end(), copyString.begin(), ::tolower);
             //TODO: Replace with regex for searching
-            size_t foundLibraryPosition{copyString.find(LIBRARY_IDENTIFIER)};
-            size_t foundEditorPosition{copyString.find(EDITOR_IDENTIFIER)};
+            size_t foundLibraryPosition{copyString.find(libraryIdentifierString)};
+            size_t foundEditorPosition{copyString.find(editorIdentifierString)};
             if (copyString.length() != 0) {
                 std::string otherCopy{copyString};
                 int numberOfWhitespace{0};
@@ -861,7 +875,7 @@ std::vector<std::string> readConfigurationFile()
                     }
                     continue;
                 } 
-                headerFile = copyString.substr(LIBRARY_IDENTIFIER.length(), (copyString.find(",") - LIBRARY_IDENTIFIER.length()));
+                headerFile = copyString.substr(libraryIdentifierString.length(), (copyString.find(",") - libraryIdentifierString.length()));
                 if (headerFile.find(".h") == std::string::npos) {
                     configurationFileOutput.emplace_back("WARNING: line " + toString(currentLine) + " of configuration file:");
                     configurationFileOutput.emplace_back("    No .h extension found, but one was expected, ignoring option");
@@ -893,7 +907,7 @@ std::vector<std::string> readConfigurationFile()
                     configurationFileOutput.emplace_back(tWhitespace(stripTrailingWhitespace(*iter).length()) + "^---expected here" + tEndl());
                     continue;
                 } 
-                extraEditors.emplace_back(iter->substr(iter->find(EDITOR_IDENTIFIER)+EDITOR_IDENTIFIER.length(), iter->find(")") - iter->find(EDITOR_IDENTIFIER)+EDITOR_IDENTIFIER.length()));
+                extraEditors.emplace_back(iter->substr(iter->find(editorIdentifierString)+editorIdentifierString.length(), iter->find(")") - iter->find(editorIdentifierString)+editorIdentifierString.length()));
             } else {
                 configurationFileOutput.emplace_back("WARNING: line " + toString(currentLine) + " of configuration file:");
                 configurationFileOutput.emplace_back("    expression is malformed/has invalid syntax, ignoring option");
