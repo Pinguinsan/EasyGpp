@@ -106,19 +106,14 @@ static const char *M_TUNE_GENERIC{" -mtune=generic"};
 static const char *EDITOR_IDENTIFIER{"addeditor("};
 static const char *LIBRARY_IDENTIFIER{"addlibrary("};
 static const char *CONFIGURATION_FILE_NAME{"easygpp.config"};
-static const char *DEFAULT_CONFIGURATION_FILE{std::string{
-                                              static_cast<std::string>(getenv("HOME"))
-                                              + "/.local/easygpp/" 
-                                              + static_cast<std::string>(CONFIGURATION_FILE_NAME)
-                                              }.c_str()};
-static const char *BACKUP_CONFIGURATION_FILE{std::string{
-                                             static_cast<std::string>("/usr/share/easygpp/") 
-                                             + static_cast<std::string>(CONFIGURATION_FILE_NAME)
-                                             }.c_str()};
-static const char *LAST_CHANCE_CONFIGURATION_FILE{std::string{
-                                                  static_cast<std::string>("/opt/GitHub/EasyGpp/config/")
-                                                + static_cast<std::string>(CONFIGURATION_FILE_NAME)
-                                                }.c_str()};
+static const std::string DEFAULT_CONFIGURATION_FILE{static_cast<std::string>(getenv("HOME"))
+                                                    + "/.local/easygpp/" 
+                                                    + static_cast<std::string>(CONFIGURATION_FILE_NAME)};
+static const std::string BACKUP_CONFIGURATION_FILE{"/usr/share/easygpp/" 
+                                                   + static_cast<std::string>(CONFIGURATION_FILE_NAME)};
+static const std::string LAST_CHANCE_CONFIGURATION_FILE{"/opt/GitHub/EasyGpp/config/"
+                                                        + static_cast<std::string>(CONFIGURATION_FILE_NAME)};
+
 static const std::vector<const char *> PTHREAD_IDENTIFIERS{"<thread>", "<future>"};
 
 static std::vector<std::string> extraEditors;
@@ -493,7 +488,7 @@ int main(int argc, char *argv[])
             if (executableName.find(".exe") != std::string::npos) {
                 std::cout << "\"" << std::endl;
             } else {
-                #ifdef __CYGWIN__
+                #if defined(__CYGWIN__)
                     std::cout << "(.exe)\"" << std::endl;
                 #else
                     std::cout << "\"" << std::endl;
@@ -653,7 +648,7 @@ void displayHelp()
     std::cout << "        Source files " << tQuoted("testProgram.cpp") << std::endl;
     std::cout << "                     " << tQuoted("testOtherFile.cpp") << std::endl;
     std::cout << "        compiled successfully to make executable file \"testProgram";
-    #ifdef __CYGWIN__
+    #if defined(__CYGWIN__)
         std::cout << "(.exe)\"" << std::endl;
     #else
         std::cout << "\"" << std::endl;
@@ -671,14 +666,25 @@ void displayVersion()
 void displayConfigurationFilePaths()
 {
     using namespace FileUtilities;
-    std::vector<std::string> configurationFiles{DEFAULT_CONFIGURATION_FILE,
-                                                BACKUP_CONFIGURATION_FILE,
-                                                LAST_CHANCE_CONFIGURATION_FILE};
+    using namespace GeneralUtilities;
+    std::vector<std::pair<std::string, std::string>> configurationFiles{std::make_pair("Default: ", DEFAULT_CONFIGURATION_FILE),
+                                                                        std::make_pair("Backup: ", BACKUP_CONFIGURATION_FILE),
+                                                                        std::make_pair("Backup 2: ", LAST_CHANCE_CONFIGURATION_FILE)};
+    long unsigned int maximumLength{0};
     for (auto &it : configurationFiles) {
-        std::cout << it;
-        if (fileExists(it)) {
-            std::cout << "    <---Existing File";
+        if ((it.first.length() + it.second.length()) > maximumLength) {
+            maximumLength = it.first.length() + it.second.length();
         }
+    }
+    for (auto &it : configurationFiles) {
+        std::cout << it.first << it.second;
+        long unsigned int tempLength{it.first.length() + it.second.length()};
+        std::cout << tWhitespace(maximumLength - tempLength) << "    ";
+        if (fileExists(it.second)) {
+            std::cout << "<---Existing File";
+        } else {
+            std::cout << "<---File Does Not Exist";
+        } 
         std::cout << std::endl;
     }
 }
