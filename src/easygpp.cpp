@@ -89,6 +89,7 @@ static const std::list<const char *> LIBRARY_PATH_SWITCHES{"-l", "--l", "-lib-di
 static const std::list<const char *> NO_M_TUNE_SWITCHES{"-m", "--m", "-no-mtune", "--no-mtune"};
 static const std::list<const char *> NO_RECORD_GCC_SWITCHES_SWITCHES{"-h", "--h", "-no-record", "--no-record"};
 static const std::list<const char *> NO_F_SANITIZE_SWITCHES{"-f", "--f", "-no-fsanitize", "--no-fsanitize"};
+static const std::list<const char *> CONFIGURATION_FILE_SWITCHES{"-p", "--p", "-config-file", "--config-file"};
 static const char *WARNING_LEVEL{" -Wall -Wextra -Wpedantic"};
 static const char *STANDARD_PROMPT_STRING{"Please enter a selection: "};
 static const char *DEFAULT_CPP_COMPILER_STANDARD{"-std=c++14"};
@@ -126,6 +127,7 @@ static std::map<std::string, std::string> editorPrograms;
 
 void displayHelp();
 void displayVersion();
+void displayConfigurationFilePaths();
 void interruptHandler(int signalNumber);
 
 bool isGeneralSwitch(const std::string &stringToCheck);
@@ -156,6 +158,9 @@ int main(int argc, char *argv[])
             return 0;
         } else if (isSwitch(argv[i], VERSION_SWITCHES)) {
             displayVersion();
+            return 0;
+        } else if (isSwitch(argv[i], CONFIGURATION_FILE_SWITCHES)) {
+            displayConfigurationFilePaths();
             return 0;
         }
     }
@@ -636,6 +641,7 @@ void displayHelp()
     std::cout << "    -m, --m, -nomtune, --nomtune: Do not inclue -mtune=generic switch" << std::endl;
     std::cout << "    -nr, --nr, -norecord, --norecord: Do not include -frecord-gcc-switches switch" << std::endl;
     std::cout << "    -f, --f, -nofsanitize, --nofsanitize: Do not include -fsanitize=undefined switch" << std::endl;
+    std::cout << "    -p, --p, -config-file, --config-file: List the configuration file paths" << std::endl;
     std::cout << "Normal gcc and g++ switches can be included as well (-Werror, -03, etc)" << std::endl;
     std::cout << "Default g++ switches used: -Wall -std=c++14" << std::endl;
     std::cout << "Argument: Source code that you want to compile" << std::endl;
@@ -660,6 +666,21 @@ void displayVersion()
     std::cout << PROGRAM_NAME << ", v" << SOFTWARE_MAJOR_VERSION << "." << SOFTWARE_MINOR_VERSION << "." << SOFTWARE_PATCH_VERSION << std::endl;
     std::cout << "Written by " << AUTHOR_NAME << ", " << currentYear() << std::endl;
     std::cout << "Built with g++ v" << GCC_MAJOR_VERSION << "." << GCC_MINOR_VERSION << "." << GCC_PATCH_VERSION << ", " << dateStampMDY() << std::endl << std::endl;
+}
+
+void displayConfigurationFilePaths()
+{
+    using namespace FileUtilities;
+    std::vector<std::string> configurationFiles{DEFAULT_CONFIGURATION_FILE,
+                                                BACKUP_CONFIGURATION_FILE,
+                                                LAST_CHANCE_CONFIGURATION_FILE};
+    for (auto &it : configurationFiles) {
+        std::cout << it;
+        if (fileExists(it)) {
+            std::cout << "    <---Existing File";
+        }
+        std::cout << std::endl;
+    }
 }
 
 bool isGeneralSwitch(const std::string &stringToCheck) 
