@@ -91,7 +91,7 @@ static const std::list<const char *> NO_RECORD_GCC_SWITCHES_SWITCHES{"-h", "--h"
 static const std::list<const char *> NO_F_SANITIZE_SWITCHES{"-f", "--f", "-no-fsanitize", "--no-fsanitize"};
 static const std::list<const char *> CONFIGURATION_FILE_SWITCHES{"-p", "--p", "-config-file", "--config-file"};
 static const char *WARNING_LEVEL{" -Wall -Wextra -Wpedantic"};
-static const char *STANDARD_PROMPT_STRING{"Please enter a selection: "};
+static const char *STANDARD_PROMPT_STRING{"enter a selection: "};
 static const char *DEFAULT_CPP_COMPILER_STANDARD{"-std=c++14"};
 static const char *DEFAULT_C_COMPILER_STANDARD{"-std=c14"};
 static const char *M_TUNE_GENERIC{" -mtune=generic"};
@@ -544,13 +544,13 @@ int main(int argc, char *argv[])
             try {
                 userReply = stoi(userReplyString);
             } catch (std::exception &e) {
-                std::cout << tQuoted(userReplyString) << " wasn't one of the selections, please enter a number between (inclusive) 1 and " << exitOption << ", or press CTRL+C to quit" << std::endl << std::endl;
+                std::cout << tQuoted(userReplyString) << " wasn't one of the selections, enter a number between (inclusive) 1 and " << exitOption << ", or press CTRL+C to quit" << std::endl << std::endl;
                 continue;
             }
             if ((userReply <= (i+1)) && (userReply > 0)) {
                 userReplied = true;
             } else {
-                std::cout << tQuoted(userReplyString) << " wasn't one of the selections, please enter a number between (inclusive) 1 and " << exitOption << ", or press CTRL+C to quit" << std::endl << std::endl;
+                std::cout << tQuoted(userReplyString) << " wasn't one of the selections, enter a number between (inclusive) 1 and " << exitOption << ", or press CTRL+C to quit" << std::endl << std::endl;
             }
         }
         if (userReply == exitOption) {
@@ -570,10 +570,10 @@ int main(int argc, char *argv[])
             editorProgramsRetrieved = true;
         }
         if (editorPrograms.empty()) {
-            std::cout << "Sorry, it looks like you don't have any known editor programs, exiting " << PROGRAM_NAME << std::endl;
+            std::cout << "No known editor programs were found, exiting " << PROGRAM_NAME << std::endl;
             return 2;
         }
-        std::cout << std::endl << "Which editor would you like to use?" << std::endl;
+        std::cout << std::endl << "Which editor should be used?" << std::endl;
         for (auto &it : editorPrograms) {
             std::cout << i << ".) " << it.first << std::endl;
             optionCopy.emplace_back(it.first);
@@ -594,13 +594,13 @@ int main(int argc, char *argv[])
             try {
                 userReply = std::stoi(userReplyString);
             } catch (std::exception &e) {
-                std::cout << tQuoted(userReplyString) << " wasn't one of the selections, please enter a number between (inclusive) 1 and " << exitOption << ", or press CTRL+C to quit" << std::endl << std::endl;
+                std::cout << tQuoted(userReplyString) << " wasn't one of the selections, enter a number between (inclusive) 1 and " << exitOption << ", or press CTRL+C to quit" << std::endl << std::endl;
                 continue;
             }
             if ((userReply <= i) && (userReply > 0)) {
                 userReplied = true;
             } else {
-                std::cout << tQuoted(userReplyString) << " wasn't one of the above number selections, please enter a number between 1 and " << exitOption << ", or press CTRL+C to quit" << std::endl << std::endl;
+                std::cout << tQuoted(userReplyString) << " wasn't one of the above number selections, enter a number between 1 and " << exitOption << ", or press CTRL+C to quit" << std::endl << std::endl;
             }
         }
         if (userReply == exitOption) {
