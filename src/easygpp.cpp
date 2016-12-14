@@ -375,7 +375,7 @@ int main(int argc, char *argv[])
                 std::cout << "WARNING: using the " << tQuoted("-static") << " switch can be very slow on some systems, consider removing it if it takes too long to compile your project" << std::endl << std::endl;
             }
         } 
-        if (configFileTask.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+        if (configFileTask.wait_for(std::chrono::seconds(0)) != std::future_status::ready) {
             configFileTask.wait();
         }
         if (!libraryOverride) {

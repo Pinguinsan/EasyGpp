@@ -126,8 +126,8 @@ ConfigurationFileReader::ConfigurationFileReader() :
                     continue;
                 }
                 std::string headerAndLibrary{trimWhitespace(getBetween("(", ")", copyString))}; 
-                headerFile = headerAndLibrary.substr(0, headerAndLibrary.find(","));
-                targetLibrary = headerAndLibrary.substr(headerAndLibrary.find(",")+1);
+                headerFile = trimWhitespaceFromBeginning(headerAndLibrary.substr(0, headerAndLibrary.find(",")));
+                targetLibrary = trimWhitespaceFromBeginning(headerAndLibrary.substr(headerAndLibrary.find(",")+1));
                 if (headerFile.find(".h") == std::string::npos) {
                     this->m_output.emplace_back(static_cast<std::string>(GENERIC_CONFIG_WARNING_BASE_STRING) 
                                                 + toString(currentLine) 
