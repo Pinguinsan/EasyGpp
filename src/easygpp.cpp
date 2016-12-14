@@ -47,7 +47,7 @@ using namespace DateTime;
 
 static const char *PROGRAM_NAME = "easyg++";
 static const char *LONG_PROGRAM_NAME = "EasyGpp";
-static const char * AUTHOR_NAME = "Tyler Lewis";
+static const char *AUTHOR_NAME = "Tyler Lewis";
 static const int SOFTWARE_MAJOR_VERSION = 0;
 static const int SOFTWARE_MINOR_VERSION = 2;
 static const int SOFTWARE_PATCH_VERSION = 0;
@@ -107,7 +107,7 @@ static const char *EDITOR_IDENTIFIER{"addeditor("};
 static const char *LIBRARY_IDENTIFIER{"addlibrary("};
 static const char *CONFIGURATION_FILE_NAME{"easygpp.config"};
 static const std::string DEFAULT_CONFIGURATION_FILE{static_cast<std::string>(getenv("HOME"))
-                                                    + "/.local/easygpp/" 
+                                                    + "/.easygpp/" 
                                                     + static_cast<std::string>(CONFIGURATION_FILE_NAME)};
 static const std::string BACKUP_CONFIGURATION_FILE{"/usr/share/easygpp/" 
                                                    + static_cast<std::string>(CONFIGURATION_FILE_NAME)};
@@ -122,9 +122,9 @@ static std::map<std::string, std::string> editorPrograms;
 
 void displayHelp();
 void displayVersion();
-void displayConfigurationFilePaths();
 void interruptHandler(int signalNumber);
 
+void displayConfigurationFilePaths();
 bool isGeneralSwitch(const std::string &stringToCheck);
 bool isLibrarySwitch(const std::string &stringToCheck);
 bool isSourceCodeFile(const std::string &stringToCheck);
