@@ -17,7 +17,9 @@ ENDIF()
 
 include_directories("${SOURCE_BASE}/include")
 
-set (EASYGPP_SOURCES "${SOURCE_BASE}/src/easygpp.cpp")
+set (EASYGPP_SOURCES "${SOURCE_BASE}/src/easygpp.cpp"
+                     "${SOURCE_BASE}/src/configurationfilereader.cpp"
+                     "${SOURCE_BASE}/src/easygppstrings.cpp")
 
 add_executable(easyg++ ${EASYGPP_SOURCES})
 target_link_libraries(easyg++ tjlutils pthread)

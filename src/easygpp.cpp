@@ -3,7 +3,7 @@
 *    Interface program for quickly using gcc/g++                       *
 *    Copyright (c) 2016 Tyler Lewis                                    *
 ************************************************************************
-*    This is a source code file for EasyGpp:                           *
+*    This is a source file for EasyGpp:                                *
 *    https://github.com/Pinguinsan/EasyGpp                             *
 *    The source code is released under the GNU LGPL                    *
 *    This file holds the main logic for the EasyGpp program            *
@@ -20,9 +20,6 @@
 *    If not, see <http://www.gnu.org/licenses/>                        *
 ***********************************************************************/
 
-#include <unistd.h>
-#include <signal.h>
-#include <cstring>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -30,20 +27,31 @@
 #include <string>
 #include <vector>
 #include <sstream>
-#include <map>
-#include <set>
+#include <memory>
 #include <utility>
 #include <iterator>
 #include <future>
+#include <chrono>
+#include <cstring>
+#include <list>
+#include <map>
+#include <set>
+
+#include <unistd.h>
+#include <signal.h>
 
 #include <datetime.h>
 #include <generalutilities.h>
 #include <systemcommand.h>
 #include <fileutilities.h>
 
+#include "easygppstrings.h"
+#include "configurationfilereader.h"
+
 using namespace GeneralUtilities;
 using namespace FileUtilities;
 using namespace DateTime;
+using namespace EasyGppStrings;
 
 static const char *PROGRAM_NAME = "easyg++";
 static const char *LONG_PROGRAM_NAME = "EasyGpp";
@@ -71,53 +79,6 @@ struct Animal {
 
 Animal Pigs;
 
-static const char PATH_DELIMITER = ':';
-
-static const std::list<const char *> KNOWN_EDITOR_BINARIES = {"notepad", "vim", "nano", "emacs", "mousepad", "leafpad", "code", "sublime_text", "vscode"};
-static const std::list<const char *> STATIC_SWITCHES{"-t", "--t", "--static", "-static"};
-static const std::list<const char *> STANDARD_SWITCHES{"-s", "--s", "-standard", "--standard"};    
-static const std::list<const char *> HELP_SWITCHES{"-h", "--h", "-help", "--help"};
-static const std::list<const char *> VERSION_SWITCHES{"v", "-v", "--v", "-version", "--version"};
-static const std::list<const char *> GCC_SWITCHES{"-c", "--c", "-cc", "--cc", "-gcc", "--gcc"};
-static const std::list<const char *> NAME_SWITCHES{"-n", "--n", "-name", "--name"};
-static const std::list<const char *> NO_DEBUG_SWITCHES{"-d", "--d", "-no-debug", "--no-debug"};    
-static const std::list<const char *> BUILD_AND_RUN_SWITCHES{"-r", "--r", "-run", "--run", "-buildandrun", "--buildandrun"};
-static const std::list<const char *> LIBRARY_OVERRIDE_SWITCHES{"-o", "--o", "-loverride", "--loverride"};
-static const std::list<const char *> VERBOSE_OUTPUT_SWITCHES{"-e", "--e", "-verbose", "--verbose"};
-static const std::list<const char *> INCLUDE_PATH_SWITCHES{"-i", "--i", "-include", "--include", "-include-dir", "--include-dir", "-include-path", "--include-path"};
-static const std::list<const char *> LIBRARY_PATH_SWITCHES{"-l", "--l", "-lib-dir", "--lib-dir", "-lib-path", "--lib-path", "-library", "--library"};
-static const std::list<const char *> NO_M_TUNE_SWITCHES{"-m", "--m", "-no-mtune", "--no-mtune"};
-static const std::list<const char *> NO_RECORD_GCC_SWITCHES_SWITCHES{"-h", "--h", "-no-record", "--no-record"};
-static const std::list<const char *> NO_F_SANITIZE_SWITCHES{"-f", "--f", "-no-fsanitize", "--no-fsanitize"};
-static const std::list<const char *> CONFIGURATION_FILE_SWITCHES{"-p", "--p", "-config-file", "--config-file"};
-static const char *WARNING_LEVEL{" -Wall -Wextra -Wpedantic"};
-static const char *STANDARD_PROMPT_STRING{"enter a selection: "};
-static const char *DEFAULT_CPP_COMPILER_STANDARD{"-std=c++14"};
-static const char *DEFAULT_C_COMPILER_STANDARD{"-std=c14"};
-static const char *M_TUNE_GENERIC{" -mtune=generic"};
-#if defined(_WIN32) || defined(__CYGWIN__)
-    static const char *RECORD_GCC_SWITCHES{""};
-    static const char *F_SANITIZE_UNDEFINED{""};
-#else
-    static const char *RECORD_GCC_SWITCHES{" -frecord-gcc-switches"};
-    static const char *F_SANITIZE_UNDEFINED{" -fsanitize=undefined"};
-#endif
-
-static const char *EDITOR_IDENTIFIER{"addeditor("};
-static const char *LIBRARY_IDENTIFIER{"addlibrary("};
-static const char *CONFIGURATION_FILE_NAME{"easygpp.config"};
-static const std::string DEFAULT_CONFIGURATION_FILE{static_cast<std::string>(getenv("HOME"))
-                                                    + "/.easygpp/" 
-                                                    + static_cast<std::string>(CONFIGURATION_FILE_NAME)};
-static const std::string BACKUP_CONFIGURATION_FILE{"/usr/share/easygpp/" 
-                                                   + static_cast<std::string>(CONFIGURATION_FILE_NAME)};
-static const std::string LAST_CHANCE_CONFIGURATION_FILE{"/opt/GitHub/EasyGpp/config/"
-                                                        + static_cast<std::string>(CONFIGURATION_FILE_NAME)};
-
-static const std::vector<const char *> PTHREAD_IDENTIFIERS{"<thread>", "<future>"};
-
-static std::vector<std::string> extraEditors;
-static std::map<std::string, std::string> libraryToHeaderMap;
 static std::map<std::string, std::string> editorPrograms; 
 
 void displayHelp();
@@ -133,7 +94,8 @@ std::string determineOverrideStandard(const std::string &stringToDetermine);
 std::map<std::string, std::string> getEditorProgramPaths();
 
 bool matchesKnownEditorBinaries(const std::string &binaryNameToCheck);
-std::vector<std::string> readConfigurationFile();
+void readConfigurationFile();
+std::unique_ptr<ConfigurationFileReader> configurationFileReader;
 
 int main(int argc, char *argv[])
 {
@@ -166,12 +128,11 @@ int main(int argc, char *argv[])
     bool verboseOutput{false};
     bool libraryOverride{false};
     bool editorProgramsRetrieved{false};
-    bool configurationFileRead{false};
     std::string mTune{M_TUNE_GENERIC};
     std::string recordGCCSwitches{RECORD_GCC_SWITCHES};
     std::string sanitize{F_SANITIZE_UNDEFINED};
-    std::string compilerType{"g++"};
-    std::string gnuDebugSwitch{" -ggdb"};
+    std::string compilerType{static_cast<std::string>(GPP_COMPILER)};
+    std::string gnuDebugSwitch{static_cast<std::string>(GDB_SWITCH)};
     std::string executableName{""};
     std::string staticSwitch{""};
     std::string staticLibGCCSwitch{""};
@@ -182,13 +143,13 @@ int main(int argc, char *argv[])
     std::set<std::string> librarySwitches;
     std::string compilerStandard{DEFAULT_CPP_COMPILER_STANDARD};
 
-    std::future<std::vector<std::string>> configFileTask = std::async(std::launch::async, readConfigurationFile);
+    auto configFileTask = std::async(std::launch::async, readConfigurationFile);
     std::future<std::map<std::string, std::string>> editorProgramsTask = std::async(std::launch::async, getEditorProgramPaths);
 
     for (int i = 0; i < argc; i++) {
         if (isSwitch(argv[i], GCC_SWITCHES)) {
             gccFlag = true;
-            compilerType = "gcc";
+            compilerType = GCC_COMPILER;
             compilerStandard = DEFAULT_C_COMPILER_STANDARD;
         } else if (isSwitch(argv[i], NAME_SWITCHES)) {
             if (argv[i+1]) {
@@ -414,14 +375,8 @@ int main(int argc, char *argv[])
                 std::cout << "WARNING: using the " << tQuoted("-static") << " switch can be very slow on some systems, consider removing it if it takes too long to compile your project" << std::endl << std::endl;
             }
         } 
-        std::vector<std::string> configFileTaskOutput;
-        if (!configurationFileRead) {
+        if (configFileTask.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
             configFileTask.wait();
-            configFileTaskOutput = configFileTask.get();
-            configurationFileRead = true;
-        }
-        for (auto &it : configFileTaskOutput) {
-            std::cout << it << std::endl;
         }
         if (!libraryOverride) {
             for (auto &it : sourceCodeFiles) {
@@ -430,17 +385,17 @@ int main(int argc, char *argv[])
                 if (readFromFile.is_open()) {
                     std::string rawString{""};
                     while (std::getline(readFromFile, rawString)) {
-                        for (auto &mapIt : libraryToHeaderMap) {
+                        for (auto &mapIt : configurationFileReader->libraryToHeaderMap()) {
                             if (rawString.find(mapIt.first) != std::string::npos) {
                                 if ((mapIt.second.find("-l") != std::string::npos) || (mapIt.second[0] == '-')) {
-                                    auto result{librarySwitches.emplace(mapIt.second)};
+                                    auto result = librarySwitches.emplace(mapIt.second);
                                     if (result.second) {
                                         if (verboseOutput) {
                                             std::cout << "NOTE: library " << tQuoted(mapIt.second) << " was associated with header file " << tQuoted(mapIt.first) << " from configuration file, so the library has been added to the command line arguments (this behavior can be disabled with the " << tQuoted("--l") << " switch)" << std::endl << std::endl;
                                         }
                                     }
                                 } else {
-                                    auto result{librarySwitches.emplace("-l" + mapIt.second)};
+                                    auto result = librarySwitches.emplace("-l" + mapIt.second);
                                     if (result.second) {
                                         if (verboseOutput) {
                                             std::cout << "NOTE: library " << tQuoted(mapIt.second) << " was associated with header file " << tQuoted(mapIt.first) << " from configuration file, so the library has been added to the command line arguments (this behavior can be disabled with the " << tQuoted("--l") << " switch)" << std::endl << std::endl;
@@ -468,7 +423,7 @@ int main(int argc, char *argv[])
         for (auto &it : librarySwitches) {
             systemCommand += (" " + it);
         }
-        for (auto &it : configFileTaskOutput) {
+        for (auto &it : configurationFileReader->output()) {
             std::cout << it << std::endl;
         }
         std::cout << "Executing below statement:" << std::endl;
@@ -790,7 +745,7 @@ bool matchesKnownEditorBinaries(const std::string &binaryNameToCheck)
             }
         }
     }
-    for (auto &it : extraEditors) {
+    for (auto &it : configurationFileReader->extraEditors()) {
         if ((foundPosition != std::string::npos) && (it.length() == binaryNameToCheck.length())) {
            return true;
         } else {
@@ -805,147 +760,9 @@ bool matchesKnownEditorBinaries(const std::string &binaryNameToCheck)
 }
 
 
-std::vector<std::string> readConfigurationFile()
+void readConfigurationFile()
 {
-    std::string libraryIdentifierString{static_cast<std::string>(LIBRARY_IDENTIFIER)};
-    std::string editorIdentifierString{static_cast<std::string>(EDITOR_IDENTIFIER)};
-    std::vector<std::string> configurationFileOutput;
-    if (!fileExists(DEFAULT_CONFIGURATION_FILE) && !fileExists(BACKUP_CONFIGURATION_FILE) && !fileExists(LAST_CHANCE_CONFIGURATION_FILE))  {
-        return configurationFileOutput;
-    }
-    std::vector<std::string> buffer;
-    std::ifstream readFromFile;
-    readFromFile.open(DEFAULT_CONFIGURATION_FILE);
-    if (readFromFile.is_open()) {
-        std::string tempString{""};
-        while (std::getline(readFromFile, tempString)) {
-            buffer.emplace_back(tempString);
-        }
-        readFromFile.close();
-    } else {
-        if (fileExists(DEFAULT_CONFIGURATION_FILE)) {
-            configurationFileOutput.emplace_back("WARNING: unable to open configuration file " + tQuoted(DEFAULT_CONFIGURATION_FILE) + ", but the file exists (maybe a permission problem?), trying backup file " + tQuoted(BACKUP_CONFIGURATION_FILE) + tEndl());
-        }
-        readFromFile.close();
-        readFromFile.open(BACKUP_CONFIGURATION_FILE);
-        if (readFromFile.is_open()) {
-            std::string tempString{""};
-            while (std::getline(readFromFile, tempString)) {
-                buffer.emplace_back(tempString);
-            }
-            readFromFile.close();
-        } else {
-            if (fileExists(BACKUP_CONFIGURATION_FILE)) {
-                configurationFileOutput.emplace_back("WARNING: unable to open configuration file " + tQuoted(BACKUP_CONFIGURATION_FILE) + ", but the file exists (maybe a permission problem?), trying second backup file " + tQuoted(LAST_CHANCE_CONFIGURATION_FILE) + tEndl());
-            }
-            readFromFile.close();
-            readFromFile.open(LAST_CHANCE_CONFIGURATION_FILE);
-            if (readFromFile.is_open()) {
-                std::string tempString{""};
-                while (std::getline(readFromFile, tempString)) {
-                    buffer.emplace_back(tempString);
-                }
-                readFromFile.close();
-            } else {
-                if (fileExists(LAST_CHANCE_CONFIGURATION_FILE))   {
-                    configurationFileOutput.emplace_back("WARNING: unable to open configuration file " + tQuoted(LAST_CHANCE_CONFIGURATION_FILE) + ", but the file exists (maybe a permission problem?), falling back on default editor names and custom libraries" + tEndl());
-                }
-                return configurationFileOutput;
-            }
-        }
-    }
-    for (std::vector<std::string>::const_iterator iter = buffer.begin(); iter != buffer.end(); iter++) {
-        try {
-            std::string copyString{*iter};
-            std::transform(copyString.begin(), copyString.end(), copyString.begin(), ::tolower);
-            //TODO: Replace with regex for searching
-            size_t foundLibraryPosition{copyString.find(libraryIdentifierString)};
-            size_t foundEditorPosition{copyString.find(editorIdentifierString)};
-            if (copyString.length() != 0) {
-                std::string otherCopy{copyString};
-                int numberOfWhitespace{0};
-                while (otherCopy.length() > 1 && isWhitespace(otherCopy[0])) {
-                    stripFromString(otherCopy, ' ');
-                    numberOfWhitespace++;
-                }
-                if (copyString.length() > numberOfWhitespace) {
-                    if (copyString[numberOfWhitespace] == '#') {
-                        continue;
-                    }
-                }
-            } else {
-                continue;
-            }
-            if (isWhitespace(copyString)) {
-                continue;
-            }
-
-            long int currentLine{std::distance<std::vector<std::string>::const_iterator>(buffer.begin(), iter)+1};
-            if (foundLibraryPosition != std::string::npos) {
-                std::string targetLibrary{""};
-                std::string headerFile{""};
-                if (copyString.find(")") == std::string::npos) {
-                    configurationFileOutput.emplace_back("WARNING: line " + toString(currentLine) + " of configuration file:");
-                    configurationFileOutput.emplace_back("    No matching parenthesis found, ignoring option");
-                    configurationFileOutput.emplace_back(*iter);
-                    configurationFileOutput.emplace_back(tWhitespace(stripTrailingWhitespace(*iter).length()) + "^---expected here" + tEndl());
-                    continue;
-                } 
-                if (copyString.find(",") == std::string::npos) { 
-                    configurationFileOutput.emplace_back("WARNING: line " + toString(currentLine) + " of configuration file:");
-                    configurationFileOutput.emplace_back("    No parameter separating comma found, ignoring option");
-                    configurationFileOutput.emplace_back(*iter);
-                    if (copyString.find(")") != std::string::npos) {
-                        configurationFileOutput.emplace_back(tWhitespace(iter->find(")")) + "^---expected here" + tEndl());
-                    } else {
-                       configurationFileOutput.emplace_back(tWhitespace( (iter->find(".h") != std::string::npos) ? iter->find(".h") : iter->length())  + "^---expected here");
-                    }
-                    continue;
-                } 
-                headerFile = copyString.substr(libraryIdentifierString.length(), (copyString.find(",") - libraryIdentifierString.length()));
-                if (headerFile.find(".h") == std::string::npos) {
-                    configurationFileOutput.emplace_back("WARNING: line " + toString(currentLine) + " of configuration file:");
-                    configurationFileOutput.emplace_back("    No .h extension found, but one was expected, ignoring option");
-                    configurationFileOutput.emplace_back(*iter);
-                    configurationFileOutput.emplace_back(tWhitespace(iter->find(",")) + "^---expected here" + tEndl());
-                    continue;
-                }
-                copyString = iter->substr(copyString.find(",")+1);
-                
-                if (copyString.length() > 1) {
-                    while ((copyString.length() > 1) && (isWhitespace(copyString[0]))) {
-                        copyString = stripFromString(copyString, " ");
-                    }
-                }
-                targetLibrary = copyString.substr(0, (copyString.find(")") != std::string::npos ? copyString.find(")") : 0));
-                if (targetLibrary.length() == 0) {
-                    configurationFileOutput.emplace_back("WARNING: line " + toString(currentLine) + " of configuration file:");
-                    configurationFileOutput.emplace_back("    No library name specified after header file, ignoring option");
-                    configurationFileOutput.emplace_back(*iter);
-                    configurationFileOutput.emplace_back(tWhitespace(iter->find(")")) + "^---expected here" + tEndl());
-                    continue;
-                }
-                libraryToHeaderMap.insert(std::make_pair(headerFile, targetLibrary));
-            } else if (foundEditorPosition != std::string::npos) {
-                if (copyString.find(")") == std::string::npos) {
-                    configurationFileOutput.emplace_back("WARNING: line " + toString(currentLine) + " of configuration file:");
-                    configurationFileOutput.emplace_back("    No matching parenthesis found, ignoring option");
-                    configurationFileOutput.emplace_back(*iter);
-                    configurationFileOutput.emplace_back(tWhitespace(stripTrailingWhitespace(*iter).length()) + "^---expected here" + tEndl());
-                    continue;
-                } 
-                extraEditors.emplace_back(iter->substr(iter->find(editorIdentifierString)+editorIdentifierString.length(), iter->find(")") - iter->find(editorIdentifierString)+editorIdentifierString.length()));
-            } else {
-                configurationFileOutput.emplace_back("WARNING: line " + toString(currentLine) + " of configuration file:");
-                configurationFileOutput.emplace_back("    expression is malformed/has invalid syntax, ignoring option");
-                configurationFileOutput.emplace_back(*iter);
-                configurationFileOutput.emplace_back(tWhitespace(stripTrailingWhitespace(*iter).length()) + "^---here" + tEndl());
-            }
-        } catch (std::exception &e) {
-             configurationFileOutput.emplace_back("Standard exception caught in readConfigurationFile: " + toString(e.what()) + tEndl());
-        }
-    }
-    return configurationFileOutput;
+    configurationFileReader = std::make_unique<ConfigurationFileReader>();
 }
 
 void interruptHandler(int signalNumber) 
