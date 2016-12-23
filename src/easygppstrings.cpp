@@ -41,16 +41,17 @@ namespace EasyGppStrings
 	const char *STANDARD_PROMPT_STRING{"enter a selection: "};
 	const char *DEFAULT_CPP_COMPILER_STANDARD{"-std=c++14"};
 	const char *DEFAULT_C_COMPILER_STANDARD{"-std=c14"};
-	const char *M_TUNE_GENERIC{" -mtune=generic"};
 	const char *GDB_SWITCH{" -ggdb"};
 	const char *GCC_COMPILER{"gcc"};
 	const char *GPP_COMPILER{"g++"};
-	#if defined(_WIN32) || defined(__CYGWIN__)
+	#if defined(_WIN32) || defined(__CYGWIN__) || defined(__arm__)
 	    const char *RECORD_GCC_SWITCHES{""};
 	    const char *F_SANITIZE_UNDEFINED{""};
+	    const char *M_TUNE_GENERIC{""};
 	#else
 	    const char *RECORD_GCC_SWITCHES{" -frecord-gcc-switches"};
 	    const char *F_SANITIZE_UNDEFINED{" -fsanitize=undefined"};
+	    const char *M_TUNE_GENERIC{" -mtune=generic"};
 	#endif
 
 	const char *EDITOR_IDENTIFIER{"addeditor("};
