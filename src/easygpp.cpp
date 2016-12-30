@@ -90,12 +90,35 @@ bool isGeneralSwitch(const std::string &stringToCheck);
 bool isLibrarySwitch(const std::string &stringToCheck);
 bool isSourceCodeFile(const std::string &stringToCheck);
 
+void doLibraryAdditions();
+
 std::string determineOverrideStandard(const std::string &stringToDetermine);
 std::map<std::string, std::string> getEditorProgramPaths();
 
 bool matchesKnownEditorBinaries(const std::string &binaryNameToCheck);
 void readConfigurationFile();
 std::unique_ptr<ConfigurationFileReader> configurationFileReader;
+
+
+static bool gccFlag{false};
+static bool buildAndRun{false};
+static bool verboseOutput{false};
+static bool libraryOverride{false};
+static bool editorProgramsRetrieved{false};
+static std::string mTune{M_TUNE_GENERIC};
+static std::string recordGCCSwitches{RECORD_GCC_SWITCHES};
+static std::string sanitize{F_SANITIZE_UNDEFINED};
+static std::string compilerType{static_cast<std::string>(GPP_COMPILER)};
+static std::string gnuDebugSwitch{static_cast<std::string>(GDB_SWITCH)};
+static std::string executableName{""};
+static std::string staticSwitch{""};
+static std::string staticLibGCCSwitch{""};
+static std::vector<std::string> sourceCodeFiles;
+static std::vector<std::string> generalSwitches;
+static std::set<std::string> includePaths;
+static std::set<std::string> libraryPaths;
+static std::set<std::string> librarySwitches;
+static std::string compilerStandard{DEFAULT_CPP_COMPILER_STANDARD};
 
 int main(int argc, char *argv[])
 {
@@ -122,26 +145,6 @@ int main(int argc, char *argv[])
         }
     }
     displayVersion();
-    
-    bool gccFlag{false};
-    bool buildAndRun{false};
-    bool verboseOutput{false};
-    bool libraryOverride{false};
-    bool editorProgramsRetrieved{false};
-    std::string mTune{M_TUNE_GENERIC};
-    std::string recordGCCSwitches{RECORD_GCC_SWITCHES};
-    std::string sanitize{F_SANITIZE_UNDEFINED};
-    std::string compilerType{static_cast<std::string>(GPP_COMPILER)};
-    std::string gnuDebugSwitch{static_cast<std::string>(GDB_SWITCH)};
-    std::string executableName{""};
-    std::string staticSwitch{""};
-    std::string staticLibGCCSwitch{""};
-    std::vector<std::string> sourceCodeFiles;
-    std::vector<std::string> generalSwitches;
-    std::set<std::string> includePaths;
-    std::set<std::string> libraryPaths;
-    std::set<std::string> librarySwitches;
-    std::string compilerStandard{DEFAULT_CPP_COMPILER_STANDARD};
 
     auto configFileTask = std::async(std::launch::async, readConfigurationFile);
     std::future<std::map<std::string, std::string>> editorProgramsTask = std::async(std::launch::async, getEditorProgramPaths);
@@ -379,46 +382,7 @@ int main(int argc, char *argv[])
             configFileTask.wait();
         }
         if (!libraryOverride) {
-            for (auto &it : sourceCodeFiles) {
-                std::ifstream readFromFile;
-                readFromFile.open(it);
-                if (readFromFile.is_open()) {
-                    std::string rawString{""};
-                    while (std::getline(readFromFile, rawString)) {
-                        for (auto &mapIt : configurationFileReader->libraryToHeaderMap()) {
-                            if (rawString.find(mapIt.first) != std::string::npos) {
-                                if ((mapIt.second.find("-l") != std::string::npos) || (mapIt.second[0] == '-')) {
-                                    auto result = librarySwitches.emplace(mapIt.second);
-                                    if (result.second) {
-                                        if (verboseOutput) {
-                                            std::cout << "NOTE: library " << tQuoted(mapIt.second) << " was associated with header file " << tQuoted(mapIt.first) << " from configuration file, so the library has been added to the command line arguments (this behavior can be disabled with the " << tQuoted("--l") << " switch)" << std::endl << std::endl;
-                                        }
-                                    }
-                                } else {
-                                    auto result = librarySwitches.emplace("-l" + mapIt.second);
-                                    if (result.second) {
-                                        if (verboseOutput) {
-                                            std::cout << "NOTE: library " << tQuoted(mapIt.second) << " was associated with header file " << tQuoted(mapIt.first) << " from configuration file, so the library has been added to the command line arguments (this behavior can be disabled with the " << tQuoted("--l") << " switch)" << std::endl << std::endl;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        #ifdef __linux__
-                            for (auto &it : PTHREAD_IDENTIFIERS) {
-                                if (rawString.find(it) != std::string::npos) {
-                                    librarySwitches.emplace("-lpthread");
-                                }
-                            }
-                        #endif
-                    }
-                    readFromFile.close();
-                } else {
-                    if (verboseOutput) {
-                        std::cout << "WARNING: could not open source file " << tQuoted(it) << " for additional library matching, skipping search" << std::endl << std::endl;
-                    }
-                }
-            }    
+            doLibraryAdditions();
         }
         for (auto &it : librarySwitches) {
             systemCommand += (" " + it);
@@ -759,6 +723,49 @@ bool matchesKnownEditorBinaries(const std::string &binaryNameToCheck)
     return false;
 }
 
+void doLibraryAdditions()
+{
+    for (auto &it : sourceCodeFiles) {
+        std::ifstream readFromFile;
+        readFromFile.open(it);
+        if (readFromFile.is_open()) {
+            std::string rawString{""};
+            while (std::getline(readFromFile, rawString)) {
+                for (auto &mapIt : configurationFileReader->libraryToHeaderMap()) {
+                    if (rawString.find(mapIt.first) != std::string::npos) {
+                        if ((mapIt.second.find("-l") != std::string::npos) || (mapIt.second[0] == '-')) {
+                            auto result = librarySwitches.emplace(mapIt.second);
+                            if (result.second) {
+                                if (verboseOutput) {
+                                    std::cout << "NOTE: library " << tQuoted(mapIt.second) << " was associated with header file " << tQuoted(mapIt.first) << " from configuration file, so the library has been added to the command line arguments (this behavior can be disabled with the " << tQuoted("--l") << " switch)" << std::endl << std::endl;
+                                }
+                            }
+                        } else {
+                            auto result = librarySwitches.emplace("-l" + mapIt.second);
+                            if (result.second) {
+                                if (verboseOutput) {
+                                    std::cout << "NOTE: library " << tQuoted(mapIt.second) << " was associated with header file " << tQuoted(mapIt.first) << " from configuration file, so the library has been added to the command line arguments (this behavior can be disabled with the " << tQuoted("--l") << " switch)" << std::endl << std::endl;
+                                }
+                            }
+                        }
+                    }
+                }
+                #ifdef __linux__
+                    for (auto &it : PTHREAD_IDENTIFIERS) {
+                        if (rawString.find(it) != std::string::npos) {
+                            librarySwitches.emplace("-lpthread");
+                        }
+                    }
+                #endif
+            }
+            readFromFile.close();
+        } else {
+            if (verboseOutput) {
+                std::cout << "WARNING: could not open source file " << tQuoted(it) << " for additional library matching, skipping search" << std::endl << std::endl;
+            }
+        }
+    }
+}
 
 void readConfigurationFile()
 {
