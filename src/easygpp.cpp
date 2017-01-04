@@ -674,7 +674,7 @@ std::map<std::string, std::string> getEditorProgramPaths()
     //Executabe Name, Path
     std::map<std::string, std::string> returnMap;
     std::string pathString{static_cast<std::string>(getenv("PATH"))};
-    std::vector<std::string> pathStringVector{parseToContainer<std::string, char, std::vector<std::string>>(pathString, PATH_DELIMITER)};
+    std::vector<std::string> pathStringVector{parseToContainer<std::vector<std::string>>(pathString.begin(), pathString.end(), PATH_DELIMITER)};
     if (pathStringVector.empty()) {
         return std::map<std::string, std::string>{};
     }

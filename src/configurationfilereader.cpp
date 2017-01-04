@@ -109,7 +109,7 @@ ConfigurationFileReader::ConfigurationFileReader() :
                                                 + static_cast<std::string>(GENERIC_CONFIG_WARNING_TAIL_STRING));
                     this->m_output.emplace_back(static_cast<std::string>(NO_CLOSING_PARENTHESIS_FOUND_STRING));
                     this->m_output.emplace_back(*iter);
-                    this->m_output.emplace_back(tWhitespace(stripTrailingWhitespace(*iter).length()) + static_cast<std::string>(EXPECTED_HERE_STRING) + tEndl());
+                    this->m_output.emplace_back(tWhitespace(iter->length()) + static_cast<std::string>(EXPECTED_HERE_STRING) + tEndl());
                     continue;
                 } 
                 if (copyString.find(",") == std::string::npos) { 
@@ -154,7 +154,7 @@ ConfigurationFileReader::ConfigurationFileReader() :
                                                 + static_cast<std::string>(GENERIC_CONFIG_WARNING_TAIL_STRING));
                     this->m_output.emplace_back(static_cast<std::string>(NO_CLOSING_PARENTHESIS_FOUND_STRING));
                     this->m_output.emplace_back(*iter);
-                    this->m_output.emplace_back(tWhitespace(stripTrailingWhitespace(*iter).length()) + static_cast<std::string>(EXPECTED_HERE_STRING) + tEndl());
+                    this->m_output.emplace_back(tWhitespace(iter->length()) + static_cast<std::string>(EXPECTED_HERE_STRING) + tEndl());
                     continue;
                 } 
                 this->m_extraEditors.emplace(getBetween("(", ")", *iter));
@@ -164,7 +164,7 @@ ConfigurationFileReader::ConfigurationFileReader() :
                                                 + static_cast<std::string>(GENERIC_CONFIG_WARNING_TAIL_STRING));                
                 this->m_output.emplace_back(static_cast<std::string>(CONFIG_EXPRESSION_MALFORMED_STRING));
                 this->m_output.emplace_back(*iter);
-                this->m_output.emplace_back(tWhitespace(stripTrailingWhitespace(*iter).length()) + static_cast<std::string>(HERE_STRING)  + tEndl());
+                this->m_output.emplace_back(tWhitespace(iter->length()) + static_cast<std::string>(HERE_STRING)  + tEndl());
             }
         } catch (std::exception &e) {
              this->m_output.emplace_back(static_cast<std::string>(STANDARD_EXCEPTION_CAUGHT_IN_CONSTRUCTOR_STRING) + toString(e.what()) + tEndl());
