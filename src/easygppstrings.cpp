@@ -40,7 +40,7 @@ namespace EasyGppStrings
 	const char *WARNING_LEVEL{" -Wall -Wextra -Wpedantic"};
 	const char *STANDARD_PROMPT_STRING{"enter a selection: "};
 	const char *DEFAULT_CPP_COMPILER_STANDARD{"-std=c++14"};
-	const char *DEFAULT_C_COMPILER_STANDARD{"-std=c14"};
+	const char *DEFAULT_C_COMPILER_STANDARD{"-std=c11"};
 	const char *GDB_SWITCH{" -ggdb"};
 	const char *GCC_COMPILER{"gcc"};
 	const char *GPP_COMPILER{"g++"};

@@ -542,7 +542,7 @@ void displayHelp()
     std::cout << "    -c, --c, -cc, --cc, -gcc, --gcc: Use gcc instead of g++" << std::endl;
     std::cout << "    -n, --n, -name, --name: Specify name for executable (do not include " << tQuoted(".exe") << ")" << std::endl;
     std::cout << "        Note: must include a name after this without a leading " << tQuoted("-") << std::endl;
-    std::cout << "    -s, --s, -standard, --standard: Override the default of -std=c++14/-std=c14" << std::endl;
+    std::cout << "    -s, --s, -standard, --standard: Override the default of -std=c++14/-std=c11" << std::endl;
     std::cout << "        Note: must include a standard following this (eg " << tQuoted("-std=c++11") << ")" << std::endl;
     std::cout << "    -st, --st, -static, --static: Link the program statically against the included libraries" << std::endl;
     std::cout << "    -h, --h, -help, --help: Display this help text" << std::endl;
