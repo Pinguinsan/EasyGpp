@@ -98,6 +98,18 @@ function linkFile() {
     fi
 }
 
+function suLinkFile() {
+    echo -n "Linking \"$1\" to \"$2\"..."
+    $SUDO ln -s -f "$1" "$2"
+    if [[ "$?" -ne "0" ]]; then
+        showFailure
+        return 1
+    else 
+        showSuccess
+        return 0
+    fi
+}
+
 function copyFile() {
     echo -n "Copying \"$1\" to \"$2\"..."
     cp -R "$1" "$2"
@@ -249,9 +261,8 @@ fi
 runCmake "$filePath" || { echo "cmake failed, bailing out"; exit 1; }
 runMake || { echo "make failed, bailing out"; exit 1; }
 
-
-sudo ln -s -f "$buildDir/$programName" "$globalBinDir"  || { echo "Could not link file, bailing out"; exit 1; }
-
+suLinkFile "$buildDir/$programName" "$globalBinDir"  || { echo "Could not link file, bailing out"; exit 1; }
+suLinkFile "$filePath/src/easygcc" "$globalBinDir"  || { echo "Could not link file, bailing out"; exit 1; }
 
 installMessage="$programLongName Installed Successfully!"
 totalLength=${#installMessage} 
