@@ -516,7 +516,7 @@ int main(int argc, char *argv[])
                 std::cout << tQuoted(userReplyString) << " wasn't one of the selections, enter a number between (inclusive) 1 and " << exitOption << ", or press CTRL+C to quit" << std::endl << std::endl;
                 continue;
             }
-            if ((userReply <= i) && (userReply > 0)) {
+            if ((userReply <= (i + 1)) && (userReply > 0)) {
                 userReplied = true;
             } else {
                 std::cout << tQuoted(userReplyString) << " wasn't one of the above number selections, enter a number between 1 and " << exitOption << ", or press CTRL+C to quit" << std::endl << std::endl;
