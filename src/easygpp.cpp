@@ -40,7 +40,6 @@
 #include <unistd.h>
 #include <signal.h>
 
-#include <datetime.h>
 #include <generalutilities.h>
 #include <systemcommand.h>
 #include <fileutilities.h>
@@ -50,7 +49,6 @@
 
 using namespace GeneralUtilities;
 using namespace FileUtilities;
-using namespace DateTime;
 using namespace EasyGppStrings;
 
 static const char *PROGRAM_NAME = "easyg++";
@@ -578,8 +576,8 @@ void displayHelp()
 void displayVersion() 
 {
     std::cout << PROGRAM_NAME << ", v" << SOFTWARE_MAJOR_VERSION << "." << SOFTWARE_MINOR_VERSION << "." << SOFTWARE_PATCH_VERSION << std::endl;
-    std::cout << "Written by " << AUTHOR_NAME << ", " << currentYear() << std::endl;
-    std::cout << "Built with g++ v" << GCC_MAJOR_VERSION << "." << GCC_MINOR_VERSION << "." << GCC_PATCH_VERSION << ", " << dateStampMDY() << std::endl << std::endl;
+    std::cout << "Written by " << AUTHOR_NAME << ", " << __DATE__ << std::endl;
+    std::cout << "Built with g++ v" << GCC_MAJOR_VERSION << "." << GCC_MINOR_VERSION << "." << GCC_PATCH_VERSION << ", " << __DATE__ << std::endl << std::endl;
 }
 
 void displayConfigurationFilePaths()
@@ -769,7 +767,7 @@ void doLibraryAdditions()
 
 void readConfigurationFile()
 {
-    configurationFileReader = std::make_unique<ConfigurationFileReader>();
+    configurationFileReader = std::unique_ptr<ConfigurationFileReader>(new ConfigurationFileReader{});
 }
 
 void interruptHandler(int signalNumber) 
