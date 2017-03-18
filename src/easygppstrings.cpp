@@ -26,6 +26,7 @@ namespace EasyGppStrings
 	const std::list<const char *> HELP_SWITCHES{"-h", "--h", "-help", "--help"};
 	const std::list<const char *> VERSION_SWITCHES{"v", "-v", "--v", "-version", "--version"};
 	const std::list<const char *> GCC_SWITCHES{"-c", "--c", "-cc", "--cc", "-gcc", "--gcc"};
+	const std::list<const char *> CLANG_SWITCHES{"-g", "--g", "-clang", "--clang"};
 	const std::list<const char *> NAME_SWITCHES{"-n", "--n", "-name", "--name"};
 	const std::list<const char *> NO_DEBUG_SWITCHES{"-d", "--d", "-no-debug", "--no-debug"};    
 	const std::list<const char *> BUILD_AND_RUN_SWITCHES{"-r", "--r", "-run", "--run", "-buildandrun", "--buildandrun"};
@@ -44,6 +45,7 @@ namespace EasyGppStrings
 	const char *GDB_SWITCH{" -ggdb"};
 	const char *GCC_COMPILER{"gcc"};
 	const char *GPP_COMPILER{"g++"};
+	const char *CLANG_COMPILER{"clang"};
 	#if defined(_WIN32) || defined(__CYGWIN__) || defined(__arm__)
 	    const char *RECORD_GCC_SWITCHES{""};
 	    const char *F_SANITIZE_UNDEFINED{""};

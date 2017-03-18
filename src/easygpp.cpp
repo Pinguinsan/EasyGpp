@@ -198,7 +198,12 @@ int main(int argc, char *argv[])
                     compilerStandard = tempCompilerStandard;
                 }
             }   
-        }  else if (isSwitch(argv[i], NO_DEBUG_SWITCHES)) {
+        } else if (isSwitch(argv[i], CLANG_SWITCHES)) {
+            recordGCCSwitches = "";
+            sanitize = "";
+            mTune = "";
+            compilerType = CLANG_COMPILER;
+        } else if (isSwitch(argv[i], NO_DEBUG_SWITCHES)) {
             gnuDebugSwitch = "";
         } else if (isSwitch(argv[i], STATIC_SWITCHES)) {
             staticSwitch = " -static ";

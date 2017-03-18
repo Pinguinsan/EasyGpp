@@ -1,4 +1,4 @@
 #!/bin/bash
 
-easyg++ -c "$@"
+easyg++ --gcc "$@"
 

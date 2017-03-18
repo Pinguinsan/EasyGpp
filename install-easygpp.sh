@@ -263,6 +263,7 @@ runMake || { echo "make failed, bailing out"; exit 1; }
 
 suLinkFile "$buildDir/$programName" "$globalBinDir"  || { echo "Could not link file, bailing out"; exit 1; }
 suLinkFile "$filePath/src/easygcc" "$globalBinDir"  || { echo "Could not link file, bailing out"; exit 1; }
+suLinkFile "$filePath/src/easyclang" "$globalBinDir"  || { echo "Could not link file, bailing out"; exit 1; }
 
 installMessage="$programLongName Installed Successfully!"
 totalLength=${#installMessage} 

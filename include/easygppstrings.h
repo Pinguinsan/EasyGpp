@@ -30,6 +30,7 @@ namespace EasyGppStrings
 	extern const std::list<const char *> HELP_SWITCHES;
 	extern const std::list<const char *> VERSION_SWITCHES;
 	extern const std::list<const char *> GCC_SWITCHES;
+	extern const std::list<const char *> CLANG_SWITCHES;
 	extern const std::list<const char *> NAME_SWITCHES;
 	extern const std::list<const char *> NO_DEBUG_SWITCHES;    
 	extern const std::list<const char *> BUILD_AND_RUN_SWITCHES;
@@ -44,6 +45,7 @@ namespace EasyGppStrings
 	extern const char *GDB_SWITCH;
 	extern const char *GCC_COMPILER;
 	extern const char *GPP_COMPILER;
+	extern const char *CLANG_COMPILER;
 	extern const char *WARNING_LEVEL;
 	extern const char *STANDARD_PROMPT_STRING;
 	extern const char *DEFAULT_CPP_COMPILER_STANDARD;
