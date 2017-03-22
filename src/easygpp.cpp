@@ -82,6 +82,7 @@ static std::map<std::string, std::string> editorPrograms;
 void displayHelp();
 void displayVersion();
 void interruptHandler(int signalNumber);
+void installSignalHandlers(void (*signalHandler)(int));
 
 void displayConfigurationFilePaths();
 bool isGeneralSwitch(const std::string &stringToCheck);
@@ -121,14 +122,8 @@ static std::string compilerStandard{DEFAULT_CPP_COMPILER_STANDARD};
 int main(int argc, char *argv[])
 {
     using namespace FileUtilities;
-   //Signal handling stuff
-   struct sigaction sigIntHandler;
-   sigIntHandler.sa_handler = interruptHandler;
-   sigemptyset(&sigIntHandler.sa_mask);
-   sigIntHandler.sa_flags = 0;
-   sigaction(SIGINT, &sigIntHandler, NULL);
-   //End signal handling
-
+    installSignalHandlers(interruptHandler);
+    
     std::cout << std::endl;
     for (int i = 0; i < argc; i++) { 
         if (isSwitch(argv[i], HELP_SWITCHES)) {
@@ -777,6 +772,33 @@ void readConfigurationFile()
 
 void interruptHandler(int signalNumber) 
 {
-    std::cout << std::endl << "Exiting " << PROGRAM_NAME << std::endl;
+    std::cout << std::endl << "Caught signal " << signalNumber << " (" << std::strerror(signalNumber) << "), exiting " << PROGRAM_NAME << std::endl;
     exit (signalNumber);
 }
+
+void installSignalHandlers(void (*signalHandler)(int))
+{
+    static struct sigaction signalInterruptHandler;
+    signalInterruptHandler.sa_handler = signalHandler;
+    sigemptyset(&signalInterruptHandler.sa_mask);
+    signalInterruptHandler.sa_flags = 0;
+    sigaction(SIGHUP, &signalInterruptHandler, NULL);
+    sigaction(SIGINT, &signalInterruptHandler, NULL);
+    sigaction(SIGQUIT, &signalInterruptHandler, NULL);
+    sigaction(SIGILL, &signalInterruptHandler, NULL);
+    sigaction(SIGABRT, &signalInterruptHandler, NULL);
+    sigaction(SIGFPE, &signalInterruptHandler, NULL);
+    sigaction(SIGKILL, &signalInterruptHandler, NULL);
+    sigaction(SIGSEGV, &signalInterruptHandler, NULL);
+    sigaction(SIGPIPE, &signalInterruptHandler, NULL);
+    sigaction(SIGALRM, &signalInterruptHandler, NULL);
+    sigaction(SIGTERM, &signalInterruptHandler, NULL);
+    sigaction(SIGUSR1, &signalInterruptHandler, NULL);
+    sigaction(SIGUSR2, &signalInterruptHandler, NULL);
+    sigaction(SIGCHLD, &signalInterruptHandler, NULL);
+    sigaction(SIGCONT, &signalInterruptHandler, NULL);
+    sigaction(SIGSTOP, &signalInterruptHandler, NULL);
+    sigaction(SIGTSTP, &signalInterruptHandler, NULL);
+    sigaction(SIGTTIN, &signalInterruptHandler, NULL);
+    sigaction(SIGTTOU, &signalInterruptHandler, NULL);
+}      
