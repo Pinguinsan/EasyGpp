@@ -51,19 +51,28 @@ using namespace GeneralUtilities;
 using namespace FileUtilities;
 using namespace EasyGppStrings;
 
-static const char *PROGRAM_NAME = "easyg++";
-static const char *LONG_PROGRAM_NAME = "EasyGpp";
-static const char *AUTHOR_NAME = "Tyler Lewis";
-static const int SOFTWARE_MAJOR_VERSION = 0;
-static const int SOFTWARE_MINOR_VERSION = 2;
-static const int SOFTWARE_PATCH_VERSION = 0;
+static const char *PROGRAM_NAME{"easyg++"};
+static const char *LONG_PROGRAM_NAME{"EasyGpp"};
+static const char *AUTHOR_NAME{"Tyler Lewis"};
+static const int SOFTWARE_MAJOR_VERSION{0};
+static const int SOFTWARE_MINOR_VERSION{2};
+static const int SOFTWARE_PATCH_VERSION{0};
 
 #if defined(__GNUC__)
-    static const int GCC_MAJOR_VERSION = __GNUC__;
-    static const int GCC_MINOR_VERSION = __GNUC_MINOR__;
-    static const int GCC_PATCH_VERSION = __GNUC_PATCHLEVEL__;
+    static const char *COMPILER_NAME{"g++"};
+    static const int COMPILER_MAJOR_VERSION{__GNUC__};
+    static const int COMPILER_MINOR_VERSION{__GNUC_MINOR__};
+    static const int COMPILER_PATCH_VERSION{__GNUC_PATCHLEVEL__};
+#elif defined(_MSC_VER)
+    static const char *COMPILER_NAME{"msvc"};
+    static const int COMPILER_MAJOR_VERSION{_MSC_VER};
+    static const int COMPILER_MINOR_VERSION{0};
+    static const int COMPILER_PATCH_VERSION{0};
 #else
-    #error "The compiler must define __GNUC__ to use this program, but the compiler does not have it defined"
+    static const char *COMPILER_NAME{"unknown"};
+    static const int COMPILER_MAJOR_VERSION{0};
+    static const int COMPILER_MINOR_VERSION{0};
+    static const int COMPILER_PATCH_VERSION{0};
 #endif
 
 enum class MovementState {
@@ -576,8 +585,8 @@ void displayHelp()
 void displayVersion() 
 {
     std::cout << PROGRAM_NAME << ", v" << SOFTWARE_MAJOR_VERSION << "." << SOFTWARE_MINOR_VERSION << "." << SOFTWARE_PATCH_VERSION << std::endl;
-    std::cout << "Written by " << AUTHOR_NAME << ", " << __DATE__ << std::endl;
-    std::cout << "Built with g++ v" << GCC_MAJOR_VERSION << "." << GCC_MINOR_VERSION << "." << GCC_PATCH_VERSION << ", " << __DATE__ << std::endl << std::endl;
+    std::cout << "Written by " << AUTHOR_NAME << ", " << std::endl;
+    std::cout << "Built with " << COMPILER_NAME << " v" << COMPILER_MAJOR_VERSION << "." << COMPILER_MINOR_VERSION << "." << COMPILER_PATCH_VERSION << ", " << __DATE__ << std::endl << std::endl;
 }
 
 void displayConfigurationFilePaths()
@@ -772,7 +781,7 @@ void readConfigurationFile()
 
 void interruptHandler(int signalNumber)
 {
-    if ((signalNumber == SIGUSR1) || (signalNumber == SIGUSR2)) {
+    if ((signalNumber == SIGUSR1) || (signalNumber == SIGUSR2) || (signalNumber == SIGCHLD)) {
         return;
     }
     std::cout << std::endl << "Caught signal " << signalNumber << " (" << std::strerror(errno) << "), exiting " << PROGRAM_NAME << std::endl;
@@ -791,8 +800,6 @@ void installSignalHandlers(void (*signalHandler)(int))
     sigaction(SIGILL, &signalInterruptHandler, NULL);
     sigaction(SIGABRT, &signalInterruptHandler, NULL);
     sigaction(SIGFPE, &signalInterruptHandler, NULL);
-    sigaction(SIGKILL, &signalInterruptHandler, NULL);
-    sigaction(SIGSEGV, &signalInterruptHandler, NULL);
     sigaction(SIGPIPE, &signalInterruptHandler, NULL);
     sigaction(SIGALRM, &signalInterruptHandler, NULL);
     sigaction(SIGTERM, &signalInterruptHandler, NULL);
@@ -800,7 +807,6 @@ void installSignalHandlers(void (*signalHandler)(int))
     sigaction(SIGUSR2, &signalInterruptHandler, NULL);
     sigaction(SIGCHLD, &signalInterruptHandler, NULL);
     sigaction(SIGCONT, &signalInterruptHandler, NULL);
-    sigaction(SIGSTOP, &signalInterruptHandler, NULL);
     sigaction(SIGTSTP, &signalInterruptHandler, NULL);
     sigaction(SIGTTIN, &signalInterruptHandler, NULL);
     sigaction(SIGTTOU, &signalInterruptHandler, NULL);
