@@ -29,7 +29,7 @@ namespace EasyGppStrings
 	const std::list<const char *> CLANG_SWITCHES{"-g", "--g", "-clang", "--clang"};
 	const std::list<const char *> NAME_SWITCHES{"-n", "--n", "-name", "--name"};
 	const std::list<const char *> NO_DEBUG_SWITCHES{"-d", "--d", "-no-debug", "--no-debug"};    
-	const std::list<const char *> BUILD_AND_RUN_SWITCHES{"-r", "--r", "-run", "--run", "-buildandrun", "--buildandrun"};
+	const std::list<const char *> BUILD_AND_RUN_SWITCHES{"-r", "--r", "-run", "--run", "-build-and-run", "--build-and-run"};
 	const std::list<const char *> LIBRARY_OVERRIDE_SWITCHES{"-o", "--o", "-loverride", "--loverride"};
 	const std::list<const char *> VERBOSE_OUTPUT_SWITCHES{"-e", "--e", "-verbose", "--verbose"};
 	const std::list<const char *> INCLUDE_PATH_SWITCHES{"-i", "--i", "-include", "--include", "-include-dir", "--include-dir", "-include-path", "--include-path"};

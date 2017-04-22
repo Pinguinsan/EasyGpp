@@ -206,6 +206,7 @@ int main(int argc, char *argv[])
             recordGCCSwitches = "";
             sanitize = "";
             mTune = "";
+            gnuDebugSwitch="";
             compilerType = CLANG_COMPILER;
         } else if (isSwitch(argv[i], NO_DEBUG_SWITCHES)) {
             gnuDebugSwitch = "";
@@ -546,7 +547,8 @@ void displayHelp()
 {
     std::cout << "Usage: " << PROGRAM_NAME << " [options] [argument]" << std::endl << std::endl;
     std::cout << "Options: " << std::endl;
-    std::cout << "    -c, --c, -cc, --cc, -gcc, --gcc: Use gcc instead of g++" << std::endl;
+    std::cout << "    -c, --c, -gcc, --gcc: Use gcc instead of g++" << std::endl;
+    std::cout << "    -g, --g, -clang, --clang: Use clang instead of g++" << std::endl;
     std::cout << "    -n, --n, -name, --name: Specify name for executable (do not include " << tQuoted(".exe") << ")" << std::endl;
     std::cout << "        Note: must include a name after this without a leading " << tQuoted("-") << std::endl;
     std::cout << "    -s, --s, -standard, --standard: Override the default of -std=c++14/-std=c11" << std::endl;
@@ -554,14 +556,14 @@ void displayHelp()
     std::cout << "    -st, --st, -static, --static: Link the program statically against the included libraries" << std::endl;
     std::cout << "    -h, --h, -help, --help: Display this help text" << std::endl;
     std::cout << "    -v, --v, -version, --version: Display the version" << std::endl;
-    std::cout << "    -nd, --nd, -nodebug, --nodebug: Compile the program without debug information for gdb" << std::endl;
+    std::cout << "    -nd, --nd, -no-debug, --no-debug: Compile the program without debug information for gdb" << std::endl;
     std::cout << "    -r, --r, -run, --run: Compile the program and run after successfully compiling" << std::endl;
-    std::cout << "    -lo, --lo, -loverride, --loverride: Override the default behavior to automatically add libraries, as specified by the configuration file " << std::endl;
+    std::cout << "    -o, --o, -loverride, --loverride: Override the default behavior to automatically add libraries, as specified by the configuration file " << std::endl;
     std::cout << "    -i, --i, -include, --include: Add an additional include path" << std::endl;
     std::cout << "    -l, --l, -libdir, --libdir: Add an additional library path" << std::endl;
-    std::cout << "    -m, --m, -nomtune, --nomtune: Do not inclue -mtune=generic switch" << std::endl;
-    std::cout << "    -nr, --nr, -norecord, --norecord: Do not include -frecord-gcc-switches switch" << std::endl;
-    std::cout << "    -f, --f, -nofsanitize, --nofsanitize: Do not include -fsanitize=undefined switch" << std::endl;
+    std::cout << "    -m, --m, -no-mtune, --no-mtune: Do not inclue -mtune=generic switch" << std::endl;
+    std::cout << "    -h, --h, -no-record, --no-record: Do not include -frecord-gcc-switches switch" << std::endl;
+    std::cout << "    -f, --f, -no-fsanitize, --no-fsanitize: Do not include -fsanitize=undefined switch" << std::endl;
     std::cout << "    -p, --p, -config-file, --config-file: List the configuration file paths" << std::endl;
     std::cout << "Normal gcc and g++ switches can be included as well (-Werror, -03, etc)" << std::endl;
     std::cout << "Default g++ switches used: -Wall -std=c++14" << std::endl;
