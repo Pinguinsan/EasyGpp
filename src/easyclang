@@ -1,4 +1,4 @@
 #!/bin/bash
 
-easyg++ --clang --no-record --no-debug "$@"
+easyg++ --clang "$@"
 
