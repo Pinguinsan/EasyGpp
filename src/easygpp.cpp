@@ -786,7 +786,8 @@ void interruptHandler(int signalNumber)
     if ((signalNumber == SIGUSR1) || (signalNumber == SIGUSR2) || (signalNumber == SIGCHLD)) {
         return;
     }
-    std::cout << std::endl << "Caught signal " << signalNumber << " (" << std::strerror(errno) << "), exiting " << PROGRAM_NAME << std::endl;
+    //std::cout << std::endl << "Caught signal " << signalNumber << " (" << std::strerror(errno) << "), exiting " << PROGRAM_NAME << std::endl;
+    std::cout << std::endl << "Caught signal " << signalNumber << ", exiting " << PROGRAM_NAME << std::endl;
     exit (signalNumber);
 }
 
