@@ -51,6 +51,8 @@ using namespace GeneralUtilities;
 using namespace FileUtilities;
 using namespace EasyGppStrings;
 
+#define SIGNAL_STRING_BUFFER_SIZE 255
+
 static const char *PROGRAM_NAME{"easyg++"};
 static const char *LONG_PROGRAM_NAME{"EasyGpp"};
 static const char *AUTHOR_NAME{"Tyler Lewis"};
@@ -786,8 +788,10 @@ void interruptHandler(int signalNumber)
     if ((signalNumber == SIGUSR1) || (signalNumber == SIGUSR2) || (signalNumber == SIGCHLD)) {
         return;
     }
-    //std::cout << std::endl << "Caught signal " << signalNumber << " (" << std::strerror(errno) << "), exiting " << PROGRAM_NAME << std::endl;
-    std::cout << std::endl << "Caught signal " << signalNumber << ", exiting " << PROGRAM_NAME << std::endl;
+    std::unique_ptr<char[]> signalString{new char[SIGNAL_STRING_BUFFER_SIZE]};
+    memset(signalString.get(), '\0', SIGNAL_STRING_BUFFER_SIZE);
+    signalString.reset(strsignal(signalNumber));
+    std::cout << std::endl << "Caught signal " << signalNumber << " (" << signalString.get() << "), exiting " << PROGRAM_NAME << std::endl;
     exit (signalNumber);
 }
 
